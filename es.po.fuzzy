@@ -1,0 +1,117 @@
+# ========================================================================
+# Nota: Luego de editar las lineas que considere, elimine la marca 'fuzzy'
+# teniendo cuidado de preservar las otras marcas (ej c-format) y la coma
+# luego de la almohadilla (#,). Las entradas 'fuzzy' no se incorporan 
+# a catalog.po ni al archivo traducido.
+# ========================================================================
+msgid ""
+msgstr ""
+"Project-Id-Version: data.table 1.15.99\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-28 21:08+0000\n"
+"PO-Revision-Date: 2024-09-10 21:18-0300MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: assign.c:557
+#, fuzzy, c-format
+msgid ""
+"Direct plonk of unnamed RHS, no copy. MAYBE_REFERENCED==%d, "
+"MAYBE_SHARED==%d\n"
+msgstr ""
+"Eliminación directa de RHS sin nombre, no hay copia. NAMED==%d, "
+"MAYBE_SHARED==%d\n"
+
+#: fifelse.c:230
+#, fuzzy, c-format
+msgid "Argument #%d must be logical but was of type %s."
+msgstr "El argumento #%d debe ser lógico."
+
+#: fifelse.c:248
+#, fuzzy, c-format
+msgid ""
+"Argument #%d has length %lld which differs from that of argument #1 (%lld). "
+"Please make sure all logical conditions have the same length."
+msgstr ""
+"El argumento #%d tiene una longitud diferente a la del argumento #1. "
+"Asegúrese de que todas las condiciones lógicas tengan la misma longitud."
+
+#: fifelse.c:288
+#, fuzzy, c-format
+msgid "Length of 'default' must be 1 or %lld."
+msgstr "La longitud de 'default' debe ser 1."
+
+#: fifelse.c:290
+#, fuzzy, c-format
+msgid ""
+"Length of output value #%d (%lld) must either be 1 or match the length of "
+"the logical condition (%lld)."
+msgstr ""
+"La longitud del valor de salida #%d debe ser 1 o la longitud de la condición "
+"lógica."
+
+#: fifelse.c:395
+#, fuzzy, c-format
+msgid "Type '%s' is not supported."
+msgstr "El tipo '%s' no está soportado"
+
+#: forder.c:287
+#, fuzzy
+msgid "Failed to alloc cradix_counts and/or cradix_tmp"
+msgstr "No se pudo asignar cradix_counts"
+
+#: forder.c:477
+#, fuzzy, c-format
+msgid "'order' length (%d) is different to by='s length (%d)"
+msgstr ""
+"o bien order= no es un número entero o su longitud (%d) es diferente a la "
+"longitud de by= (%d)"
+
+#: forder.c:908 forder.c:978 forder.c:1000 forder.c:1102 forder.c:1233
+#: forder.c:1289 fread.c:2573
+#, fuzzy, c-format
+msgid "Failed to allocate %d bytes for '%s'."
+msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+
+#: forder.c:1145
+#, fuzzy, c-format
+msgid "Failed to allocate 'my_otmp' and/or 'my_ktmp' arrays (%d bytes)."
+msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+
+#: fread.c:2132
+#, fuzzy, c-format
+msgid "Failed to allocate %d bytes for '%s': %s"
+msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+
+#: fread.c:2688
+#, fuzzy, c-format
+msgid ""
+"Stopped early on line %<PRIu64>. Expected %d fields but found %d. Consider "
+"fill=%d or even more based on your knowledge of the input file. Use fill=Inf "
+"for reading the whole file for detecting the number of fields. First "
+"discarded non-empty line: <<%s>>"
+msgstr ""
+" Se detuvo antes en la línea %<PRIu64>. Se esperaban %d campos pero se "
+"encontraron %d. Considera fill=%d o incluso más en función de tu "
+"conocimiento del archivo de entrada. Primera línea no vacía descartada: "
+"<<%s>>"
+
+#: fsort.c:132
+#, fuzzy, c-format
+msgid "Failed to allocate %d bytes in fsort()."
+msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+
+#: fwrite.c:853
+#, fuzzy, c-format
+msgid "Failed to allocated %d bytes for '%s'."
+msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+
+#: rbindlist.c:330
+#, fuzzy, c-format
+msgid ""
+"Class attribute on column %d of item %d does not match with column %d of "
+"item %d. You can deactivate this safety-check by using ignore.attr=TRUE"
+msgstr ""
+"El atributo de clase en la columna %d del elemento %d no coincide con la "
+"columna %d del elemento %d."

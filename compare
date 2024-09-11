@@ -1,0 +1,4 @@
+msgfilter -i a.po sh -c "msggrep -K -F -e \"\$MSGFILTER_MSGID\" <b.po"
+
+
+
