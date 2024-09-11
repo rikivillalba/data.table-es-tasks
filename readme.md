@@ -37,12 +37,14 @@ vacíos... ¡enhorabuena! el trabajo está finalizado.
 ## Referencia Herramientas gettext utilizadas
 ### msgmerge 
 > msgmerge [option] def.po ref.pot
+
 Usado para adaptar un catálogo a una plantilla, agrega los elementos que están
 en la plantilla y no en el .po, y elimina con comentario #~ los que no están 
 en la plantilla. También marca como "fuzzy" las traducciones que tienen cambios
 menores, para su corrección.
 
 > msgattrib [option] [inputfile]
+
 Usado para filtrar, a partir del resultado de msgmerge, los elementos sin 
 traducción o marcados como "fuzzy". 
 
