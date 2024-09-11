@@ -42,14 +42,19 @@ Usado para adaptar un catálogo a una plantilla, agrega los elementos que están
 en la plantilla y no en el .po, y elimina con comentario #~ los que no están 
 en la plantilla. También marca como "fuzzy" las traducciones que tienen cambios
 menores, para su corrección.
+[docs](https://www.gnu.org/software/gettext/manual/html_node/msgmerge-Invocation.html)
 
+### msgattrib
 > msgattrib [option] [inputfile]
 
 Usado para filtrar, a partir del resultado de msgmerge, los elementos sin 
 traducción o marcados como "fuzzy". 
+[docs](https://www.gnu.org/software/gettext/manual/html_node/msgattrib-Invocation.html)
 
+### msgcat
 > msgcat [option] [inputfile]...
-
+> 
 Usando la opción --use-first, combina las traducciones de los archivos creados
 filtrando mediante msgattrib (los cuales se editan a mano) con las traducciones
 ya existentes en es.po y R-es.po.
+[docs](https://www.gnu.org/software/gettext/manual/html_node/msgcat-Invocation.html)
