@@ -49,6 +49,7 @@ Usado para filtrar, a partir del resultado de msgmerge, los elementos sin
 traducción o marcados como "fuzzy". 
 
 > msgcat [option] [inputfile]...
+
 Usando la opción --use-first, combina las traducciones de los archivos creados
 filtrando mediante msgattrib (los cuales se editan a mano) con las traducciones
 ya existentes en es.po y R-es.po.
