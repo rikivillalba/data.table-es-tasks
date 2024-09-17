@@ -341,7 +341,7 @@ msgstr ""
 "está intentando cambiar el tipo de columna para que sea una columna de lista "
 "vacía, al igual que con todos los cambios de tipo de columna, proporcione un "
 "vector RHS de longitud completa como vector('list',nrow(DT)) ; es decir, "
-"'plonk' en la nueva columna."
+"pisar ('plonk') los datos sobre la nueva columna."
 
 #: assign.c:481
 #, c-format
@@ -413,17 +413,15 @@ msgstr ""
 "table."
 
 #: assign.c:552
-#, fuzzy, c-format
-#| msgid ""
-#| "RHS for item %d has been duplicated because NAMED==%d MAYBE_SHARED==%d, "
-#| "but then is being plonked. length(values)==%d; length(cols)==%d)\n"
+#, c-format
 msgid ""
 "RHS for item %d has been duplicated because MAYBE_REFERENCED==%d "
 "MAYBE_SHARED==%d, but then is being plonked. length(values)==%d; "
 "length(cols)==%d)\n"
 msgstr ""
-"RHS para el elemento %d se ha duplicado porque NAMED==%d MAYBE_SHARED==%d, "
-"pero luego se está eliminando. length(valores)==%d; length(columnas)==%d)\n"
+"RHS para el elemento %d se ha duplicado porque MAYBE_REFERENCED==%d "
+"MAYBE_SHARED==%d, pero luego es pisado ('plonked'). length(values)==%d; "
+"length(cols)==%d)\n"
 
 #: assign.c:557
 #, fuzzy, c-format

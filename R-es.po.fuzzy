@@ -15,7 +15,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: data.table.R:2789
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Check that is.data.table(DT) == TRUE. Otherwise, :=, `:=`(...) and let(...) "
 "are defined for use in j, once only and in particular ways. Note that "
@@ -24,14 +24,14 @@ msgid ""
 msgstr ""
 "Compruebe que is.data.table(DT) == TRUE. De lo contrario, :=, `:=`(...) y "
 "let(...) se definen para su uso en j, una sola vez y de manera particular. "
-"Ver ayuda(\":=\")."
+"Note que la calificación de espacio de nombre (data.table::`:=`(...) no está "
+"soportada. Ver help(\":=\")."
 
 #: fread.R:115
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "To read %s files directly, fread() requires 'R.utils' package which cannot "
 "be found. Please install 'R.utils' using 'install.packages('R.utils')'."
 msgstr ""
-"Para leer archivos gz y bz2 directamente, fread() requiere el paquete 'R."
-"utils' que no se puede encontrar. Instale 'R.utils' usando 'install."
-"packages('R.utils')'."
+"Para leer archivos %s directamente, fread() requiere el paquete 'R.utils' que "
+"no se puede encontrar. Instale 'R.utils' usando 'install.packages('R.utils')'."

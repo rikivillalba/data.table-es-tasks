@@ -3758,24 +3758,6 @@ msgstr ""
 msgid "When deleting columns, i should not be provided"
 msgstr "Al eliminar columnas, 'i' no debe ser proporcionado"
 
-#: assign.c:474
-#, c-format
-msgid ""
-"RHS of assignment to existing column '%s' is zero length but not NULL. If "
-"you intend to delete the column use NULL. Otherwise, the RHS must have "
-"length > 0; e.g., NA_integer_. If you are trying to change the column type "
-"to be an empty list column then, as with all column type changes, provide a "
-"full length RHS vector such as vector('list',nrow(DT)); i.e., 'plonk' in the "
-"new column."
-msgstr ""
-"RHS de la asignación a la columna existente '%s' tiene longitud cero pero no "
-"es NULL. Si tiene la intención de eliminar la columna, utilice NULL. De lo "
-"contrario, el RHS debe tener una longitud > 0; por ejemplo, NA_integer_. Si "
-"está intentando cambiar el tipo de columna para que sea una columna de lista "
-"vacía, al igual que con todos los cambios de tipo de columna, proporcione un "
-"vector RHS de longitud completa como vector('list',nrow(DT)) ; es decir, "
-"'plonk' en la nueva columna."
-
 #: assign.c:481
 #, c-format
 msgid ""
@@ -3844,26 +3826,6 @@ msgstr ""
 "sido reasignados. Asegúrese de utilizar setnames() en lugar de` names<-` o "
 "`colnames<-`. De lo contrario, informe al rastreador de problemas de data."
 "table."
-
-#: assign.c:552
-#, c-format
-msgid ""
-"RHS for item %d has been duplicated because MAYBE_REFERENCED==%d "
-"MAYBE_SHARED==%d, but then is being plonked. length(values)==%d; "
-"length(cols)==%d)\n"
-msgstr ""
-"RHS para el elemento %d se ha duplicado porque MAYBE_REFERENCED==%d "
-"MAYBE_SHARED==%d, pero luego es pisado (plonk). length(values)==%d; "
-"length(cols)==%d)\n"
-
-#: assign.c:557
-#, c-format
-msgid ""
-"Direct plonk of unnamed RHS, no copy. MAYBE_REFERENCED==%d, "
-"MAYBE_SHARED==%d\n"
-msgstr ""
-"RHS sin nombre es \"pisado\" directamente (\"plonk\"), sin copia. "
-"MAYBE_REFERENCED==%d, MAYBE_SHARED==%d\n"
 
 #: assign.c:626
 #, c-format
