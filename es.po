@@ -3,11 +3,13 @@ msgstr ""
 "Project-Id-Version: data.table 1.15.99\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-08-28 21:08+0000\n"
-"PO-Revision-Date: 2024-09-10 21:18-0300"
+"PO-Revision-Date: 2024-09-17 15:34-0300"
+"Last-Translator: Ricardo Villalba <rikivillalba@gmail.com>\n"
+"Language-Team: es\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: assign.c:121
 msgid ""
@@ -343,7 +345,7 @@ msgstr ""
 "está intentando cambiar el tipo de columna para que sea una columna de lista "
 "vacía, al igual que con todos los cambios de tipo de columna, proporcione un "
 "vector RHS de longitud completa como vector('list',nrow(DT)) ; es decir, "
-"'plonk' en la nueva columna."
+"para pisar ('plonk') sobre la nueva columna."
 
 #: assign.c:481
 #, c-format
@@ -426,13 +428,13 @@ msgstr ""
 "length(cols)==%d)\n"
 
 #: assign.c:557
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Direct plonk of unnamed RHS, no copy. MAYBE_REFERENCED==%d, "
 "MAYBE_SHARED==%d\n"
 msgstr ""
-"Eliminación directa de RHS sin nombre, no hay copia. NAMED==%d, "
-"MAYBE_SHARED==%d\n"
+"RHS sin nombre se pisa directamente (plonk), no hay copia. "
+"MAYBE_REFERENCED==%d, MAYBE_SHARED==%d\n"
 
 #: assign.c:626
 #, c-format
@@ -1166,18 +1168,18 @@ msgstr ""
 "https://github.com/Rdatatable/data.table/issues/4131."
 
 #: fifelse.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "Argument #%d must be logical but was of type %s."
-msgstr "El argumento #%d debe ser lógico."
+msgstr "El argumento #%d debe ser lógic, pero era de tipo %s."
 
 #: fifelse.c:248
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Argument #%d has length %lld which differs from that of argument #1 (%lld). "
 "Please make sure all logical conditions have the same length."
 msgstr ""
-"El argumento #%d tiene una longitud diferente a la del argumento #1. "
-"Asegúrese de que todas las condiciones lógicas tengan la misma longitud."
+"El argumento #%d tiene longitud %lld diferente a la del argumento #1 (%lld). "
+"Asegúrese de que todas las condiciones lógicatienen la misma longitud."
 
 #: fifelse.c:254
 #, c-format
@@ -1231,21 +1233,21 @@ msgstr ""
 "diferentes."
 
 #: fifelse.c:288
-#, fuzzy, c-format
+#, c-format
 msgid "Length of 'default' must be 1 or %lld."
-msgstr "La longitud de 'default' debe ser 1."
+msgstr "La longitud de 'default' debe ser 1 o %lld."
 
 #: fifelse.c:290
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Length of output value #%d (%lld) must either be 1 or match the length of "
 "the logical condition (%lld)."
 msgstr ""
-"La longitud del valor de salida #%d debe ser 1 o la longitud de la condición "
-"lógica."
+"La longitud del valor de salida #%d (%lld) debe ser 1 o la longitud de la "
+"condición lógica"
 
 #: fifelse.c:395
-#, fuzzy, c-format
+#, c-format
 msgid "Type '%s' is not supported."
 msgstr "El tipo '%s' no está soportado"
 
@@ -1477,9 +1479,8 @@ msgstr ""
 "radix=%d"
 
 #: forder.c:287
-#, fuzzy
 msgid "Failed to alloc cradix_counts and/or cradix_tmp"
-msgstr "No se pudo asignar cradix_counts"
+msgstr "No se pudo asignar cradix_counts y/o cradix_tmp"
 
 #: forder.c:320
 #, c-format
@@ -1525,11 +1526,9 @@ msgid "forder.c received %d rows and %d columns\n"
 msgstr "<forder.c>: recibió %d filas y %d columnas\n"
 
 #: forder.c:477
-#, fuzzy, c-format
+#, c-format
 msgid "'order' length (%d) is different to by='s length (%d)"
-msgstr ""
-"o bien order= no es un número entero o su longitud (%d) es diferente a la "
-"longitud de by= (%d)"
+msgstr "longitud de 'order' (%d) es diferente a la de by= (%d)"
 
 #: forder.c:491
 #, c-format
@@ -1620,9 +1619,9 @@ msgstr "stat[%03d]==%20<PRIu64>\n"
 
 #: forder.c:908 forder.c:978 forder.c:1000 forder.c:1102 forder.c:1233
 #: forder.c:1289 fread.c:2573
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to allocate %d bytes for '%s'."
-msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+msgstr "Error al asignar %d bytes para '%s'"
 
 #: forder.c:1133
 #, c-format
@@ -1632,9 +1631,10 @@ msgstr ""
 "nBatch=%d"
 
 #: forder.c:1145
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to allocate 'my_otmp' and/or 'my_ktmp' arrays (%d bytes)."
-msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+msgstr ""
+"Error al asignar memoria para los arrays 'my_otmp' y/o 'my_otmp' (%d bytes)"
 
 #: forder.c:1250
 #, c-format
@@ -2373,9 +2373,9 @@ msgid "  Cancelled by user: userOverride() returned false."
 msgstr " Cancelado por el usuario: userOverride() devolvió false."
 
 #: fread.c:2132
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to allocate %d bytes for '%s': %s"
-msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+msgstr "Error al asignar %d bytes para '%s': %s"
 
 #: fread.c:2139
 #, c-format
@@ -2487,17 +2487,17 @@ msgid "Discarded single-line footer: <<%s>>"
 msgstr "Pie de página de una sola línea descartado: <<%s>>"
 
 #: fread.c:2688
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Stopped early on line %<PRIu64>. Expected %d fields but found %d. Consider "
 "fill=%d or even more based on your knowledge of the input file. Use fill=Inf "
 "for reading the whole file for detecting the number of fields. First "
 "discarded non-empty line: <<%s>>"
 msgstr ""
-" Se detuvo antes en la línea %<PRIu64>. Se esperaban %d campos pero se "
-"encontraron %d. Considera fill=%d o incluso más en función de tu "
-"conocimiento del archivo de entrada. Primera línea no vacía descartada: "
-"<<%s>>"
+"Se detuvo anticipadamente en la línea %<PRIu64>. Se esperaban %d campos pero "
+"se encontraron %d. Considere fill=%d o más en función de su conocimiento del "
+"archivo de entrada. Use fill=Inf para detectar el número de campos leyendo "
+"el archivo completo. Primera línea no vacía descartada: <<%s>>"
 
 #: fread.c:2691
 #, c-format
@@ -3010,9 +3010,9 @@ msgid "nth=%d, nBatch=%d\n"
 msgstr "nth=%d, nBatch=%d\n"
 
 #: fsort.c:132
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to allocate %d bytes in fsort()."
-msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+msgstr "Error al asignar %d bytes en fsort()."
 
 #: fsort.c:158
 #, c-format
@@ -3219,9 +3219,9 @@ msgstr ""
 "fwrite para conocer las opciones nThread, buffMB y detalladas."
 
 #: fwrite.c:853
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to allocated %d bytes for '%s'."
-msgstr "Error al asignar %d bytes para la matriz de tamaño: %s"
+msgstr "Error al asignar %d bytes para: '%s'."
 
 #: fwrite.c:1019
 #, c-format
@@ -3965,13 +3965,14 @@ msgstr ""
 "es decir, está mal formada."
 
 #: rbindlist.c:330
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Class attribute on column %d of item %d does not match with column %d of "
 "item %d. You can deactivate this safety-check by using ignore.attr=TRUE"
 msgstr ""
 "El atributo de clase en la columna %d del elemento %d no coincide con la "
-"columna %d del elemento %d."
+"columna %d del elemento %d. Puede desactivar este control de seguridad "
+"usando ignore.attr=TRUE"
 
 #: rbindlist.c:380
 #, c-format

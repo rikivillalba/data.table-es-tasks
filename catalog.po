@@ -3,11 +3,33 @@ msgstr ""
 "Project-Id-Version: data.table 1.15.99\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-08-28 21:08+0000\n"
-"PO-Revision-Date: 2024-09-10 20:49-0300Language: es\n"
-"MIME-Version: 1.0\n"
+"PO-Revision-Date: 2024-09-10 21:18-0300MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: data.table.R:2789
+#, c-format
+msgid ""
+"Check that is.data.table(DT) == TRUE. Otherwise, :=, `:=`(...) and let(...) "
+"are defined for use in j, once only and in particular ways. Note that "
+"namespace-qualification like data.table::`:=`(...) is not supported. See "
+"help(\":=\")."
+msgstr ""
+"Compruebe que is.data.table(DT) == TRUE. De lo contrario, :=, `:=`(...) y "
+"let(...) se definen para su uso en j, una sola vez y de manera particular. "
+"Note que la calificación de espacio de nombre (data.table::`:=`(...) no está "
+"soportada. Ver help(\":=\")."
+
+#: fread.R:115
+#, c-format
+msgid ""
+"To read %s files directly, fread() requires 'R.utils' package which cannot "
+"be found. Please install 'R.utils' using 'install.packages('R.utils')'."
+msgstr ""
+"Para leer archivos %s directamente, fread() requiere el paquete 'R.utils' "
+"que no se puede encontrar. Instale 'R.utils' usando 'install.packages('R."
+"utils')'."
 
 #: AllS4.R:2
 #, c-format
@@ -1256,19 +1278,6 @@ msgstr ""
 "nuevo en v1.12.2 y está sujeto a cambios. Simplemente está destinado a "
 "transmitir un comportamiento predeterminado. Consulte ?rbindlist."
 
-#: data.table.R:2789
-#, c-format
-msgid ""
-"Check that is.data.table(DT) == TRUE. Otherwise, :=, `:=`(...) and let(...) "
-"are defined for use in j, once only and in particular ways. Note that "
-"namespace-qualification like data.table::`:=`(...) is not supported. See "
-"help(\":=\")."
-msgstr ""
-"Compruebe que is.data.table(DT) == TRUE. De lo contrario, :=, `:=`(...) y "
-"let(...) se definen para su uso en j, una sola vez y de manera particular. "
-"Note que no está soportado el uso del espacio de nombre calificado, como "
-"data.table::`:=`(...). Vea help(\":=\")."
-
 #: data.table.R:2806
 #, c-format
 msgid ""
@@ -2086,15 +2095,6 @@ msgid ""
 msgstr ""
 "Actualmente no se admiten archivos comprimidos que contengan más de 1 "
 "archivo."
-
-#: fread.R:115
-#, c-format
-msgid ""
-"To read %s files directly, fread() requires 'R.utils' package which cannot "
-"be found. Please install 'R.utils' using 'install.packages('R.utils')'."
-msgstr ""
-"Para leer archivos %s directamente, fread() requiere el paquete 'R.utils' "
-"que no fue encontrado. Instálelo usando 'install.packages('R.utils')'."
 
 #: fread.R:125
 #, c-format
@@ -3447,6 +3447,107 @@ msgid_plural "Indices: %s\n"
 msgstr[0] "Índice: %s\n"
 msgstr[1] "Índices: %s\n"
 
+#: assign.c:557
+#, c-format
+msgid ""
+"Direct plonk of unnamed RHS, no copy. MAYBE_REFERENCED==%d, "
+"MAYBE_SHARED==%d\n"
+msgstr ""
+"RHS sin nombre se pisa directamente (plonk), no hay copia. "
+"MAYBE_REFERENCED==%d, MAYBE_SHARED==%d\n"
+
+#: fifelse.c:230
+#, c-format
+msgid "Argument #%d must be logical but was of type %s."
+msgstr "El argumento #%d debe ser lógic, pero era de tipo %s."
+
+#: fifelse.c:248
+#, c-format
+msgid ""
+"Argument #%d has length %lld which differs from that of argument #1 (%lld). "
+"Please make sure all logical conditions have the same length."
+msgstr ""
+"El argumento #%d tiene longitud %lld diferente a la del argumento #1 (%lld). "
+"Asegúrese de que todas las condiciones lógicatienen la misma longitud."
+
+#: fifelse.c:288
+#, c-format
+msgid "Length of 'default' must be 1 or %lld."
+msgstr "La longitud de 'default' debe ser 1 o %lld."
+
+#: fifelse.c:290
+#, c-format
+msgid ""
+"Length of output value #%d (%lld) must either be 1 or match the length of "
+"the logical condition (%lld)."
+msgstr ""
+"La longitud del valor de salida #%d (%lld) debe ser 1 o la longitud de la "
+"condición lógica"
+
+#: fifelse.c:395
+#, c-format
+msgid "Type '%s' is not supported."
+msgstr "El tipo '%s' no está soportado"
+
+#: forder.c:287
+msgid "Failed to alloc cradix_counts and/or cradix_tmp"
+msgstr "No se pudo asignar cradix_counts y/o cradix_tmp"
+
+#: forder.c:477
+#, c-format
+msgid "'order' length (%d) is different to by='s length (%d)"
+msgstr "longitud de 'order' (%d) es diferente a la de by= (%d)"
+
+#: forder.c:908 forder.c:978 forder.c:1000 forder.c:1102 forder.c:1233
+#: forder.c:1289 fread.c:2573
+#, c-format
+msgid "Failed to allocate %d bytes for '%s'."
+msgstr "Error al asignar %d bytes para '%s'"
+
+#: forder.c:1145
+#, c-format
+msgid "Failed to allocate 'my_otmp' and/or 'my_ktmp' arrays (%d bytes)."
+msgstr ""
+"Error al asignar memoria para los arrays 'my_otmp' y/o 'my_otmp' (%d bytes)"
+
+#: fread.c:2132
+#, c-format
+msgid "Failed to allocate %d bytes for '%s': %s"
+msgstr "Error al asignar %d bytes para '%s': %s"
+
+#: fread.c:2688
+#, c-format
+msgid ""
+"Stopped early on line %<PRIu64>. Expected %d fields but found %d. Consider "
+"fill=%d or even more based on your knowledge of the input file. Use fill=Inf "
+"for reading the whole file for detecting the number of fields. First "
+"discarded non-empty line: <<%s>>"
+msgstr ""
+"Se detuvo anticipadamente en la línea %<PRIu64>. Se esperaban %d campos pero "
+"se encontraron %d. Considere fill=%d o más en función de su conocimiento del "
+"archivo de entrada. Use fill=Inf para detectar el número de campos leyendo "
+"el archivo completo. Primera línea no vacía descartada: <<%s>>"
+
+#: fsort.c:132
+#, c-format
+msgid "Failed to allocate %d bytes in fsort()."
+msgstr "Error al asignar %d bytes en fsort()."
+
+#: fwrite.c:853
+#, c-format
+msgid "Failed to allocated %d bytes for '%s'."
+msgstr "Error al asignar %d bytes para: '%s'."
+
+#: rbindlist.c:330
+#, c-format
+msgid ""
+"Class attribute on column %d of item %d does not match with column %d of "
+"item %d. You can deactivate this safety-check by using ignore.attr=TRUE"
+msgstr ""
+"El atributo de clase en la columna %d del elemento %d no coincide con la "
+"columna %d del elemento %d. Puede desactivar este control de seguridad "
+"usando ignore.attr=TRUE"
+
 #: assign.c:121
 msgid ""
 ".internal.selfref ptr is NULL. This is expected and normal for a data.table "
@@ -3758,6 +3859,24 @@ msgstr ""
 msgid "When deleting columns, i should not be provided"
 msgstr "Al eliminar columnas, 'i' no debe ser proporcionado"
 
+#: assign.c:474
+#, c-format
+msgid ""
+"RHS of assignment to existing column '%s' is zero length but not NULL. If "
+"you intend to delete the column use NULL. Otherwise, the RHS must have "
+"length > 0; e.g., NA_integer_. If you are trying to change the column type "
+"to be an empty list column then, as with all column type changes, provide a "
+"full length RHS vector such as vector('list',nrow(DT)); i.e., 'plonk' in the "
+"new column."
+msgstr ""
+"RHS de la asignación a la columna existente '%s' tiene longitud cero pero no "
+"es NULL. Si tiene la intención de eliminar la columna, utilice NULL. De lo "
+"contrario, el RHS debe tener una longitud > 0; por ejemplo, NA_integer_. Si "
+"está intentando cambiar el tipo de columna para que sea una columna de lista "
+"vacía, al igual que con todos los cambios de tipo de columna, proporcione un "
+"vector RHS de longitud completa como vector('list',nrow(DT)) ; es decir, "
+"pisar ('plonk') los datos sobre la nueva columna."
+
 #: assign.c:481
 #, c-format
 msgid ""
@@ -3826,6 +3945,17 @@ msgstr ""
 "sido reasignados. Asegúrese de utilizar setnames() en lugar de` names<-` o "
 "`colnames<-`. De lo contrario, informe al rastreador de problemas de data."
 "table."
+
+#: assign.c:552
+#, c-format
+msgid ""
+"RHS for item %d has been duplicated because MAYBE_REFERENCED==%d "
+"MAYBE_SHARED==%d, but then is being plonked. length(values)==%d; "
+"length(cols)==%d)\n"
+msgstr ""
+"RHS para el elemento %d se ha duplicado porque MAYBE_REFERENCED==%d "
+"MAYBE_SHARED==%d, pero luego es pisado ('plonked'). length(values)==%d; "
+"length(cols)==%d)\n"
 
 #: assign.c:626
 #, c-format
@@ -4558,20 +4688,6 @@ msgstr ""
 "Los objetos de clase S4 (excepto nanotime) no son compatibles. Consulte "
 "https://github.com/Rdatatable/data.table/issues/4131."
 
-#: fifelse.c:230
-#, c-format
-msgid "Argument #%d must be logical but was of type %s."
-msgstr "El argumento #%d debe ser lógico, pero era tipo %s."
-
-#: fifelse.c:248
-#, c-format
-msgid ""
-"Argument #%d has length %lld which differs from that of argument #1 (%lld). "
-"Please make sure all logical conditions have the same length."
-msgstr ""
-"El argumento #%d tiene longitud %lld, que difiere de la del argumento #1. "
-"(%lld). Asegúrese de que todas las condiciones lógicas tienen igual longitud."
-
 #: fifelse.c:254
 #, c-format
 msgid ""
@@ -4622,25 +4738,6 @@ msgid ""
 msgstr ""
 "El argumento #2 y el argumento #%d son ambos factores pero sus niveles son "
 "diferentes."
-
-#: fifelse.c:288
-#, c-format
-msgid "Length of 'default' must be 1 or %lld."
-msgstr "La longitud de 'default' debe ser 1 ó %lld."
-
-#: fifelse.c:290
-#, c-format
-msgid ""
-"Length of output value #%d (%lld) must either be 1 or match the length of "
-"the logical condition (%lld)."
-msgstr ""
-"La longitud del valor de salida #%d (%lld) debe ser 1 o bien 1 coincidir con "
-"la longitud de la condición lógica (%lld)."
-
-#: fifelse.c:395
-#, c-format
-msgid "Type '%s' is not supported."
-msgstr "El tipo '%s' no está soportado."
 
 #: fmelt.c:18
 msgid "'x' must be an integer"
@@ -4861,10 +4958,6 @@ msgstr ""
 "Error lógico. counts[0]=%d en cradix pero debería haberse reducido a 0. "
 "radix=%d"
 
-#: forder.c:287
-msgid "Failed to alloc cradix_counts and/or cradix_tmp"
-msgstr "No se pudo asignar cradix_counts y/o cradix_tmp"
-
 #: forder.c:320
 #, c-format
 msgid "Unable to realloc %d * %d bytes in range_str"
@@ -4907,11 +5000,6 @@ msgstr "<forder.c>: recibió un tipo de vector '%s' de longitud %d\n"
 #, c-format
 msgid "forder.c received %d rows and %d columns\n"
 msgstr "<forder.c>: recibió %d filas y %d columnas\n"
-
-#: forder.c:477
-#, c-format
-msgid "'order' length (%d) is different to by='s length (%d)"
-msgstr "Longitud de 'order' (%d) es diferente a la de by= (%d)"
 
 #: forder.c:491
 #, c-format
@@ -5000,23 +5088,12 @@ msgstr "Bloque de tiempo %2d%s = %8.3f %8d\n"
 msgid "stat[%03d]==%20<PRIu64>\n"
 msgstr "stat[%03d]==%20<PRIu64>\n"
 
-#: forder.c:908 forder.c:978 forder.c:1000 forder.c:1102 forder.c:1233
-#: forder.c:1289 fread.c:2573
-#, c-format
-msgid "Failed to allocate %d bytes for '%s'."
-msgstr "Error al asignar %d bytes para '%s'."
-
 #: forder.c:1133
 #, c-format
 msgid "Failed to allocate parallel counts. my_n=%d, nBatch=%d"
 msgstr ""
 "Fallo al asignar memoria para conteo de lotes en paralelo . my_n=%d, "
 "nBatch=%d"
-
-#: forder.c:1145
-#, c-format
-msgid "Failed to allocate 'my_otmp' and/or 'my_ktmp' arrays (%d bytes)."
-msgstr "Error al asignar arrays 'my_otmp' y/o 'my_ktmp' (%d bytes)."
 
 #: forder.c:1250
 #, c-format
@@ -5754,11 +5831,6 @@ msgstr ""
 msgid "  Cancelled by user: userOverride() returned false."
 msgstr " Cancelado por el usuario: userOverride() devolvió false."
 
-#: fread.c:2132
-#, c-format
-msgid "Failed to allocate %d bytes for '%s': %s"
-msgstr "Error al asignar %d bytes para '%s' : %s"
-
 #: fread.c:2139
 #, c-format
 msgid ""
@@ -5867,19 +5939,6 @@ msgstr "%10d : %-9s '%c'\n"
 #, c-format
 msgid "Discarded single-line footer: <<%s>>"
 msgstr "Pie de página de una sola línea descartado: <<%s>>"
-
-#: fread.c:2688
-#, c-format
-msgid ""
-"Stopped early on line %<PRIu64>. Expected %d fields but found %d. Consider "
-"fill=%d or even more based on your knowledge of the input file. Use fill=Inf "
-"for reading the whole file for detecting the number of fields. First "
-"discarded non-empty line: <<%s>>"
-msgstr ""
-"Se detuvo en forma prematura en la línea %<PRIu64>. Se esperaban %d campos "
-"pero se encontraron %d. Considere fill=%d o incluso más en función de su "
-"conocimiento del archivo de entrada. Primera línea descartada no vacía: "
-"<<%s>>"
 
 #: fread.c:2691
 #, c-format
@@ -6391,11 +6450,6 @@ msgstr "'x' debe ser un vector de tipo double actualmente"
 msgid "nth=%d, nBatch=%d\n"
 msgstr "nth=%d, nBatch=%d\n"
 
-#: fsort.c:132
-#, c-format
-msgid "Failed to allocate %d bytes in fsort()."
-msgstr "Error al asignar %d bytes en fsort()."
-
 #: fsort.c:158
 #, c-format
 msgid "Range = [%g,%g]\n"
@@ -6599,11 +6653,6 @@ msgid ""
 msgstr ""
 "No se pueden asignar %zu MB * %d búferes comprimidos de hilos; '%d:%s'. Lea ?"
 "fwrite para conocer las opciones nThread, buffMB y detalladas."
-
-#: fwrite.c:853
-#, c-format
-msgid "Failed to allocated %d bytes for '%s'."
-msgstr "Error al asignar %d bytes para '%s'."
 
 #: fwrite.c:1019
 #, c-format
@@ -7345,16 +7394,6 @@ msgid ""
 msgstr ""
 "La columna %d del elemento %d tiene el tipo 'factor' pero no tiene niveles; "
 "es decir, está mal formada."
-
-#: rbindlist.c:330
-#, c-format
-msgid ""
-"Class attribute on column %d of item %d does not match with column %d of "
-"item %d. You can deactivate this safety-check by using ignore.attr=TRUE"
-msgstr ""
-"El atributo de clase en la columna %d del elemento %d no coincide con la "
-"columna %d del elemento %d. Se puede desactivar esta comprobación de "
-"seguridad usando ignore.attr=TRUE"
 
 #: rbindlist.c:380
 #, c-format
