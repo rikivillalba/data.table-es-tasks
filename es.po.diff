@@ -1,0 +1,234 @@
+6,7c6,11
+< "PO-Revision-Date: 2024-09-18 11:06-0300"
+< "charset=UTF-8\n"
+---
+> "PO-Revision-Date: 2024-08-05 17:43-0300\n"
+> "Last-Translator: Ricardo Villalba <rikivillalba@gmail.com>\n"
+> "Language-Team: es\n"
+> "Language: es\n"
+> "MIME-Version: 1.0\n"
+> "Content-Type: text/plain; charset=UTF-8\n"
+9d12
+< "Plural-Forms: nplurals=2; plural=(n!=1);\n"
+308c311
+< "para pisar ('plonk') sobre la nueva columna."
+---
+> "'plonk' en la nueva columna."
+405c408
+< "RHS sin nombre se pisa (plonk) directamente, no hay copia. NAMED==%d, "
+---
+> "Eliminación directa de RHS sin nombre, no hay copia. NAMED==%d, "
+561,562c564,565
+< "'new' tiene una longitud %d. Debe ser la misma que la longitud de "
+< "'which' (%d)"
+---
+> "'new' tiene una longitud %d. Debe ser la misma que la longitud de 'which' ("
+> "%d)"
+572,574c575,576
+< "Incompatible vector lengths: length(x)==%d length(lower)==%d "
+< "length(upper)==%d. Each should be either length 1 or the length of the "
+< "longest."
+---
+> "Incompatible vector lengths: length(x)==%d length(lower)==%d length(upper)=="
+> "%d. Each should be either length 1 or the length of the longest."
+585,586c587,588
+< "El elemento %d del inferior (%d) es mayor que el elemento %d del superior "
+< "(%d)"
+---
+> "El elemento %d del inferior (%d) es mayor que el elemento %d del superior ("
+> "%d)"
+625,626c627,628
+< "El elemento %d de 'lower' ('%s') es mayor que el elemento %d de "
+< "'upper' ('%s')."
+---
+> "El elemento %d de 'lower' ('%s') es mayor que el elemento %d de 'upper' ("
+> "'%s')."
+1061,1062c1063,1064
+< "La longitud de 'yes' es %<PRId64> pero debe ser 1 o la longitud de "
+< "'test' (%<PRId64>)."
+---
+> "La longitud de 'yes' es %<PRId64> pero debe ser 1 o la longitud de 'test' ("
+> "%<PRId64>)."
+1067,1068c1069,1070
+< "La longitud de 'no' es %<PRId64> pero debe ser 1 o la longitud de "
+< "'test' (%<PRId64>)."
+---
+> "La longitud de 'no' es %<PRId64> pero debe ser 1 o la longitud de 'test' ("
+> "%<PRId64>)."
+1073,1074c1075,1076
+< "La longitud de 'na' es %<PRId64> pero debe ser 1 o la longitud de "
+< "'test' (%<PRId64>)."
+---
+> "La longitud de 'na' es %<PRId64> pero debe ser 1 o la longitud de 'test' ("
+> "%<PRId64>)."
+1526,1527c1528,1529
+< "Fallo al asignar memoria para conteo de lotes en paralelo . my_n=%d, "
+< "nBatch=%d"
+---
+> "Fallo al asignar memoria para conteo de lotes en paralelo . my_n=%d, nBatch="
+> "%d"
+1742,1743c1744,1745
+< "  UTF-8 byte order mark EF BB BF found at the start of the file and "
+< "skipped.\n"
+---
+> "  UTF-8 byte order mark EF BB BF found at the start of the file and skipped."
+> "\n"
+1855c1857,1858
+< msgid "  sep='\\n' passed in meaning read lines as single character column\n"
+---
+> msgid ""
+> "  sep='\\n' passed in meaning read lines as single character column\n"
+1873,1874c1876,1877
+< "  No sep and quote rule found a block of 2x2 or greater. Single column "
+< "input.\n"
+---
+> "  No sep and quote rule found a block of 2x2 or greater. Single column input."
+> "\n"
+1888,1889c1891,1892
+< "quoted (e.g. field separator does not appear within any field), try "
+< "quote=\"\" to avoid this warning."
+---
+> "quoted (e.g. field separator does not appear within any field), try quote=\""
+> "\" to avoid this warning."
+2121,2122c2124,2125
+< "  Initial alloc = %<PRIu64> rows (%<PRIu64> + %d%%) using bytes/"
+< "max(mean-2*sd,min) clamped between [1.1*estn, 2.0*estn]\n"
+---
+> "  Initial alloc = %<PRIu64> rows (%<PRIu64> + %d%%) using bytes/max(mean-"
+> "2*sd,min) clamped between [1.1*estn, 2.0*estn]\n"
+2191,2192c2194,2195
+< "Internal error: invalid head position. jump=%d, headPos=%p, "
+< "thisJumpStart=%p, sof=%p"
+---
+> "Internal error: invalid head position. jump=%d, headPos=%p, thisJumpStart="
+> "%p, sof=%p"
+2205,2206c2208,2209
+< "  Too few rows allocated. Allocating additional %<PRIu64> rows (now "
+< "nrows=%<PRIu64>) and continue reading from jump %d\n"
+---
+> "  Too few rows allocated. Allocating additional %<PRIu64> rows (now nrows="
+> "%<PRIu64>) and continue reading from jump %d\n"
+2243,2244c2246,2247
+< "conocimiento del archivo de entrada. Primera línea no vacía descartada: "
+< "<<%s>>"
+---
+> "conocimiento del archivo de entrada. Primera línea no vacía descartada: <<"
+> "%s>>"
+2425,2426c2428,2429
+< "Column number %d (select[%d]) is negative but should be in the range [1,"
+< "ncol=%d]. Consider drop= for column exclusion."
+---
+> "Column number %d (select[%d]) is negative but should be in the range [1,ncol="
+> "%d]. Consider drop= for column exclusion."
+2481,2482c2484,2485
+< "El número de columna %d (colClasses[[%d]][%d]) está fuera de rango [1,"
+< "ncol=%d]"
+---
+> "El número de columna %d (colClasses[[%d]][%d]) está fuera de rango [1,ncol="
+> "%d]"
+2701,2702c2704,2705
+< "counts is %dMB (%d pages per nBatch=%d, batchSize=%<PRIu64>, "
+< "lastBatchSize=%<PRIu64>)\n"
+---
+> "counts is %dMB (%d pages per nBatch=%d, batchSize=%<PRIu64>, lastBatchSize="
+> "%<PRIu64>)\n"
+2758,2759c2761,2762
+< "args.doRowNames=%d args.rowNames=%p args.rowNameFun=%d doQuote=%d args."
+< "nrow=%<PRId64> args.ncol=%d eolLen=%d\n"
+---
+> "args.doRowNames=%d args.rowNames=%p args.rowNameFun=%d doQuote=%d args.nrow="
+> "%<PRId64> args.ncol=%d eolLen=%d\n"
+2762,2763c2765,2766
+< "args.doRowNames=%d args.rowNames=%p args.rowNameFun=%d doQuote=%d args."
+< "nrow=%<PRId64> args.ncol=%d eolLen=%d\n"
+---
+> "args.doRowNames=%d args.rowNames=%p args.rowNameFun=%d doQuote=%d args.nrow="
+> "%<PRId64> args.ncol=%d eolLen=%d\n"
+2915,2916c2918,2919
+< "input has specific integer rownames but their length (%lld) != nrow "
+< "(%<PRId64>)"
+---
+> "input has specific integer rownames but their length (%lld) != nrow ("
+> "%<PRId64>)"
+2918,2919c2921,2922
+< "la entrada tiene nombres de filas enteros específicos pero su longitud "
+< "(%lld) != nrow (%<PRId64>)"
+---
+> "la entrada tiene nombres de filas enteros específicos pero su longitud ("
+> "%lld) != nrow (%<PRId64>)"
+2929,2930c2932,2933
+< "If quote='auto', fields will be quoted if the field contains either sep "
+< "('%c') or sep2 ('%c') because column %d is a list column.\n"
+---
+> "If quote='auto', fields will be quoted if the field contains either sep ("
+> "'%c') or sep2 ('%c') because column %d is a list column.\n"
+2932,2933c2935,2936
+< "Si quote='auto', los campos se entrecomillarán si el campo contiene sep "
+< "('%c') o sep2 ('%c') porque la columna %d es una columna de lista.\n"
+---
+> "Si quote='auto', los campos se entrecomillarán si el campo contiene sep ("
+> "'%c') o sep2 ('%c') porque la columna %d es una columna de lista.\n"
+2960,2961c2963,2964
+< "Internal error: nrow=%d  ngrp=%d  nbit=%d  bitshift=%d  highSize=%zu  "
+< "nBatch=%zu  batchSize=%zu  lastBatchSize=%zu\n"
+---
+> "Internal error: nrow=%d  ngrp=%d  nbit=%d  bitshift=%d  highSize=%zu  nBatch="
+> "%zu  batchSize=%zu  lastBatchSize=%zu\n"
+3383,3384c3386,3387
+< " data.table está usando %d hilos con aceleración==%d. Consulte ?"
+< "setDTthreads.\n"
+---
+> " data.table está usando %d hilos con aceleración==%d. Consulte ?setDTthreads."
+> "\n"
+3550,3551c3553,3554
+< "options()$datatable.rbindlist.check=='%s' which is not "
+< "'message'|'warning'|'error'|'none'. See news item 5 in v1.12.2."
+---
+> "options()$datatable.rbindlist.check=='%s' which is not 'message'|'warning'|"
+> "'error'|'none'. See news item 5 in v1.12.2."
+3553,3554c3556,3557
+< "options()$datatable.rbindlist.check=='%s' que no es "
+< "'message'|'warning'|'error'|'none'. Ver ítem 5 en NEWS v1.12.2."
+---
+> "options()$datatable.rbindlist.check=='%s' que no es 'message'|'warning'|"
+> "'error'|'none'. Ver ítem 5 en NEWS v1.12.2."
+3864,3865c3867,3868
+< "argumento que especifica columnas recibidas columna(s) no existentes: "
+< "cols[%d]=%d"
+---
+> "argumento que especifica columnas recibidas columna(s) no existentes: cols"
+> "[%d]=%d"
+3873,3874c3876,3877
+< "argumento que especifica columnas recibió columnas no existentes: "
+< "cols[%d]='%s'"
+---
+> "argumento que especifica columnas recibió columnas no existentes: cols[%d]="
+> "'%s'"
+3990,4016d3992
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
+< 
