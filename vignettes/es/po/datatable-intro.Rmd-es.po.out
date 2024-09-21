@@ -920,8 +920,8 @@ msgstr ""
 
 #: es%5Cdatatable-intro.Rmd.tmp%2Bp
 msgid ""
-"=====* We first obtain the row indices for the expression `carrier == "
-"\"AA\"` from `i`.====="
+"=====* We first obtain the row indices for the expression `carrier == \"AA"
+"\"` from `i`.====="
 msgstr ""
 "=====* Primero obtenemos los índices de fila para la expresión `carrier == "
 "\"AA\"` de `i`.====="
@@ -1499,8 +1499,8 @@ msgid ""
 msgstr ""
 "Podemos hacer mucho más en `i` introduciendo claves en `data.table`, lo que "
 "permite crear subconjuntos y uniones con una velocidad increíble. Veremos "
-"esto en la viñeta *\"Claves y subconjuntos basados ​​en búsqueda binaria "
-"rápida\"* y *\"Uniones y uniones continuas\"*."
+"esto en la viñeta *\"Claves y subconjuntos basados ​​en búsqueda binaria rápida"
+"\"* y *\"Uniones y uniones continuas\"*."
 
 #: es%5Cdatatable-intro.Rmd.tmp%2Bheading
 msgid "Using `j`:"

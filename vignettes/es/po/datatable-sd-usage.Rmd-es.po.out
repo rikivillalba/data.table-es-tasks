@@ -196,8 +196,8 @@ msgid ""
 "`Teams` data set, but might more logically be stored as `factor`s:"
 msgstr ""
 "Observamos que las siguientes columnas se almacenan como `character` en el "
-"conjunto de datos `teams`, pero sería más lógico almacenarlas como "
-"\"factor\":"
+"conjunto de datos `teams`, pero sería más lógico almacenarlas como \"factor"
+"\":"
 
 #: es%5Cdatatable-sd-usage.Rmd.tmp%2Bp
 msgid "The syntax to now convert these columns to `factor` is simple:"
