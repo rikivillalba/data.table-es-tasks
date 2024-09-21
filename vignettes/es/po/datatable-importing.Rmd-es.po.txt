@@ -1,4 +1,5 @@
 
+
 Este documento se centra en el uso de `data.table` como dependencia en otros paquetes R. Si está interesado en utilizar el código C de `data.table` desde una aplicación que no sea R, o en llamar a sus funciones C directamente, vaya a la [última sección]{1} de esta viñeta.
 
 Importar `data.table` no es diferente de importar otros paquetes R. Esta viñeta tiene como objetivo responder las preguntas más comunes que surgen en torno a ese tema; las lecciones presentadas aquí se pueden aplicar a otros paquetes R.

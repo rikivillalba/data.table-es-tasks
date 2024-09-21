@@ -1,4 +1,6 @@
-La primera sección, Preguntas frecuentes para principiantes, está pensada para leerse en orden, de principio a fin. Está escrita en un estilo de preguntas frecuentes, para que sea más fácil de asimilar. En realidad, no son las preguntas más frecuentes. Una mejor métrica de esto último sería buscar en Stack Overflow.
+
+
+La primera sección ---Preguntas frecuentes para principiantes--- está pensada para leerse en orden, de principio a fin. Está escrita en un estilo de preguntas frecuentes, para que sea más fácil de asimilar. En realidad, no son las preguntas más frecuentes. Una mejor métrica de esto último sería buscar en Stack Overflow.
 
 Estas preguntas frecuentes son de lectura obligatoria y se consideran documentación principal. No haga preguntas en Stack Overflow ni plantees problemas en GitHub hasta que las haya leído. Todos podemos darnos cuenta de que no las has leído cuando hace una pregunta. Por lo tanto, si hace una pregunta y no la ha leído, no use su nombre real.
 

@@ -1,3 +1,5 @@
+
+
 Este documento tiene como objetivo orientar sobre la medición del rendimiento de `data.table`. Un único lugar para documentar las mejores prácticas y las trampas que se deben evitar.
 
 fread: borrar cachés
@@ -46,7 +48,7 @@ Procesamiento multihilo
 
 Uno de los principales factores que probablemente afecten los tiempos es la cantidad de hilos disponibles para su sesión R. En versiones recientes de `data.table`, algunas funciones están paralelizadas. Puede controlar la cantidad de hilos que desea utilizar con `setDTthreads`.
 
-Dentro de un bucle, es preferible `set` en lugar de `:=`
+Dentro de un bucle, es preferible usar `set` en lugar de `:=`
 
 A menos que esté utilizando un índice al realizar una _subasignación por referencia_, debería preferir la función `set`, que no impone una sobrecarga de la llamada al método `[.data.table`.
 
