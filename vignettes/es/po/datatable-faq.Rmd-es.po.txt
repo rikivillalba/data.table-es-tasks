@@ -1,213 +1,427 @@
-La primera sección ---Preguntas frecuentes para principiantes--- está pensada para leerse en orden, de principio a fin. Está escrita en un estilo de preguntas frecuentes, para que sea más fácil de asimilar. En realidad, no son las preguntas más frecuentes. Una mejor métrica de esto último sería buscar en Stack Overflow.
-Estas preguntas frecuentes son de lectura obligatoria y se consideran documentación principal. No haga preguntas en Stack Overflow ni plantees problemas en GitHub hasta que las haya leído. Todos podemos darnos cuenta de que no las has leído cuando hace una pregunta. Por lo tanto, si hace una pregunta y no la ha leído, no use su nombre real.
-Este documento se ha revisado rápidamente teniendo en cuenta los cambios en la versión 1.9.8 publicada en noviembre de 2016. Envíe solicitudes de incorporación de cambios para corregir errores o realizar mejoras. Si alguien sabe por qué la tabla de contenidos aparece tan estrecha y aplastada cuando la muestra CRAN, háganoslo saber. Este documento solía ser un PDF y lo cambiamos recientemente a HTML.
-Preguntas frecuentes para principiantes
-¿Por qué `DT[ , 5]` y `DT[2, 5]` devuelven un data.table de una columna en lugar de vectores como `data.frame`? {#j-num}
-Para mantener la coherencia, de modo que cuando utilice data.table en funciones que aceptan entradas variables, pueda confiar en que `DT[...]` devolverá una data.table. No tiene que recordar incluir `drop=FALSE` como en data.frame. data.table se lanzó por primera vez en 2006 y esta diferencia con data.frame ha sido una característica desde el principio.
-Sin embargo, es posible que haya escuchado que, en general, es una mala práctica hacer referencia a las columnas por número en lugar de por nombre. Si su colega viene y lee su código más tarde, es posible que tenga que buscar por todas partes para encontrar qué columna es la número 5. Si usted o las otras personas cambian el orden de las columnas más arriba en su programa R, se podrían producir resultados incorrectos sin advertencia o error en el caso de que olvide cambiar todos los lugares en su código que hacen referencia a la columna número 5. Esto es su error, no de R o data.table. Y es, realmente, muy malo. Por favor, no lo haga. Es el mismo mantra que tienen los desarrolladores profesionales de SQL: nunca use `select *`, siempre seleccione explícitamente por nombre de columna para, al menos, intentar ser robusto a cambios futuros.
-Digamos que la columna 5 se llama `\"region\"` y realmente debe extraer esa columna como un vector, no como un data.table. Es más robusto usar el nombre de la columna y escribir `DT$region` o `DT[[\"region\"]]`; es decir, lo mismo que R base. Se recomienda usar `$` y `[[` de R base en data.table. No cuando se combinan con `<-` para asignar (use `:=` en su lugar para eso), sino solo para seleccionar una sola columna por nombre.
-Hay algunas circunstancias en las que hacer referencia a una columna por número parece ser la única forma, como una secuencia de columnas. En estas situaciones, al igual que en data.frame, puede escribir `DT[, 5:10]` y `DT[,c(1,4,10)]`. Sin embargo, nuevamente, es más robusto (para futuros cambios en la cantidad y orden de las columnas de sus datos) usar un rango nombrado como `DT[,columnRed:columnViolet]` o nombrar cada una `DT[,c(\"columnRed\",\"columnOrange\",\"columnYellow\")]`. Es un trabajo más difícil al principio, pero probablemente se lo agradecerá, y sus colegas podrían agradecerle en el futuro. Al menos, puede decir que hizo su mejor esfuerzo para escribir un código robusto si algo sale mal.
-Sin embargo, lo que realmente queremos que haga es `DT[,.(columnRed,columnOrange,columnYellow)]`; es decir, que use los nombres de las columnas como si fueran variables directamente dentro de `DT[...]`. No tiene que anteponer cada columna con `DT$` como lo hace en data.frame. La parte `.()` es solo un alias para `list()` y puede usar `list()` en su lugar si lo prefiere. Puede colocar cualquier expresión R de nombres de columnas, utilizando cualquier paquete R, que devuelva diferentes tipos de diferentes longitudes, allí mismo. Queríamos alentar a que lo hiciera con tanta fuerza en el pasado que deliberadamente habíamos hecho que `DT[,5]` no funcionara en absoluto. Antes de que se lanzara v1.9.8 en noviembre de 2016, `DT[,5]` solía devolver solo `5`. La idea era que podíamos enseñar de manera más simple un hecho: que las partes dentro de `DT[...]` siempre se evalúan dentro del marco de DT (las data.tables ven los nombres de las columnas como si fueran variables). Y `5` evalúa a `5`, por lo que el comportamiento era coherente con la regla única. Le pedíamos que pasara por un obstáculo deliberado adicional `DT[,5,with=FALSE]` si realmente quería seleccionar una columna por nombre o número. A partir de noviembre de 2016, no necesita usar `with=FALSE` y veremos cómo una mayor coherencia con data.frame en este sentido ayudará o perjudicará tanto a los usuarios nuevos como a los antiguos. Los nuevos usuarios que no lean estas preguntas frecuentes, ni siquiera esta primera entrada, con suerte no se encontrarán con problemas con data.table como antes si esperaban que funcionara como data.frame. Con suerte, no se perderán la oportunidad de comprender nuestra intención y recomendación de colocar expresiones de columnas dentro de `DT[i, j, by]`. Si usan data.table como data.frame, no obtendrán ningún beneficio. Si conoce a alguien así, dele un empujoncito amistoso para que lea este documento como lo hace usted.
-Recordatorio: puede colocar _cualquier_ expresión R dentro de `DT[...]` usando nombres de columna como si fueran variables; por ejemplo, intente `DT[, colA*colB/2]`. Esto devuelve un vector porque usó nombres de columna como si fueran variables. Encierre con `.()` para devolver una tabla de datos; es decir, `DT[,.(colA*colB/2)]`. Nómbrela: `DT[,.(myResult = colA*colB/2)]`. Y dejaremos que adivine cómo devolver dos cosas de esta consulta. También es bastante común hacer un montón de cosas dentro de un cuerpo anónimo: `DT[, { x<-colA+10; x*x/2 }]` o llamar a la función de otro paquete: `DT[ , fitdistr(columnA, \"normal\")]`.
-¿Por qué `DT[,\"region\"]` devuelve una tabla de datos de 1 columna en lugar de un vector?
-Consulte la [respuesta anterior]{1}. Pruebe `DT$region` en su lugar. O `DT[[\"region\"]]`.
-¿Por qué `DT[, region]` devuelve un vector para la columna \"region\"? Preferiría una tabla de datos de 1 columna.
-Pruebe `DT[ , .(region)]` en su lugar. `.()` es un alias para `list()` y garantiza que se devuelva una tabla de datos.
-Además, continúe leyendo y consulte las preguntas frecuentes después de la siguiente página. Revise los documentos completos antes de quedarse atascado en una parte.
-¿Por qué `DT[ , x, y, z]` no funciona? Esperaba las 3 columnas `x`,`y` y `z`.
-La expresión `j` es el segundo argumento. Pruebe `DT[ , c(\"x\",\"y\",\"z\")]` o `DT[ , .(x,y,z)]`.
-Asigné una variable `mycol=\"x\"` pero luego `DT[, mycol]` devuelve un error. ¿Cómo hago para que busque el nombre de la columna que se encuentra en la variable `mycol`?
-El error es que no se puede encontrar la columna denominada `\"mycol\"`, y este error es correcto. El alcance de `data.table` es diferente al de `data.frame` en el sentido de que puede usar nombres de columnas como si fueran variables directamente dentro de `DT[...]` sin anteponer `DT$` a cada nombre de columna; consulte la pregunta frecuente 1.1 anterior.
-Para usar `mycol` para seleccionar la columna `x` de `DT`, hay algunas opciones:
-Consulte `?data.table` para obtener más detalles sobre el prefijo `..`.
-El argumento `with` toma su nombre de la función `base` `with()`. Cuando `with=TRUE` (predeterminado), `data.table` funciona de forma similar a `with()`, es decir, `DT[, mycol]` se comporta como `with(DT, mycol)`. Cuando `with=FALSE`, las reglas de evaluación estándar de `data.frame` se aplican a todas las variables en `j` y ya no se pueden usar nombres de columnas directamente.
-¿Cuáles son los beneficios de poder usar nombres de columnas como si fueran variables dentro de `DT[...]`?
-`j` no tiene por qué ser solo nombres de columnas. Puede escribir cualquier _expresión_ R de nombres de columnas directamente en `j`, _p. ej._, `DT[ , mean(x*y/z)]`. Lo mismo se aplica a `i`, _p. ej._, `DT[x>1000, sum(y*z)]`.
-Esto ejecuta la expresión `j` en el conjunto de filas donde la expresión `i` es verdadera. Ni siquiera necesita devolver datos, _p. ej._, `DT[x>1000, plot(y, z)]`. Puede hacer `j` por grupo simplemente agregando `by = `; p. ej., `DT[x>1000, sum(y*z), by = w]`. Esto ejecuta `j` para cada grupo en la columna `w` pero solo sobre las filas donde `x>1000`. Al colocar las 3 partes de la consulta (i=where, j=select y by=group by) dentro de los corchetes, data.table ve esta consulta como un todo antes de que se evalúe cualquier parte de ella. Por lo tanto, puede optimizar la consulta combinada para el rendimiento. Puede hacer esto porque el lenguaje R tiene una evaluación diferida única (Python y Julia no la tienen). data.table ve las expresiones dentro de `DT[...]` antes de que se evalúen y las optimiza antes de la evaluación. Por ejemplo, si data.table ve que solo estás usando 2 columnas de 100, no se molestará en crear un subconjunto de las 98 que no son necesarias para tu expresión j.
-OK, estoy empezando a ver de qué se trata data.table, pero ¿por qué no mejorar `data.frame` en R? ¿Por qué tiene que ser un paquete nuevo?
-Como [resaltado arriba]{1}, `j` en `[.data.table` es fundamentalmente diferente de `j` en `[.data.frame`. Incluso si algo tan simple como `DF[ , 1]` se cambiara en R base para devolver un data.frame en lugar de un vector, eso rompería el código existente en muchos miles de paquetes CRAN y código de usuario. Tan pronto como dimos el paso para crear una nueva clase que heredara de data.frame, tuvimos la oportunidad de cambiar algunas cosas y lo hicimos. Queremos que data.table sea ligeramente diferente y que funcione de esta manera para que funcione una sintaxis más complicada. También hay otras diferencias (ver [abajo]{2}).
-Además, data.table _hereda_ de `data.frame`. También _es_ un `data.frame`. Se puede pasar un data.table a cualquier paquete que solo acepte `data.frame` y ese paquete puede usar la sintaxis `[.data.frame` en el data.table. Ver [esta respuesta]{1} para saber cómo se logra eso.
-También _hemos_ propuesto mejoras para R siempre que era posible. Una de ellas fue aceptada como una nueva característica en R 2.12.0:
-`unique()` y `match()` ahora son más rápidos en vectores de caracteres donde todos los elementos están en la caché CHARSXP global y tienen codificación sin marcar (ASCII). Gracias a Matt Dowle por sugerir mejoras en la forma en que se genera el código hash en unique.c.
-Una segunda propuesta fue utilizar `memcpy` en duplicate.c, que es mucho más rápido que un bucle for en C. Esto mejoraría la _forma_ en que R copia datos internamente (en algunas medidas, hasta 13 veces). El hilo sobre r-devel está [aquí]{1}.
-Una tercera propuesta más significativa que fue aceptada es que R ahora utiliza el código de ordenamiento por radix de data.table a partir de R 3.3.0:
-El algoritmo de ordenamiento por radix y la implementación de data.table (forder) reemplazan al ordenamiento por radix (conteo) anterior y agregan un nuevo método para order(). Contribuido por Matt Dowle y Arun Srinivasan, el nuevo algoritmo admite vectores lógicos, enteros (incluso con valores grandes), reales y de caracteres. Supera a todos los demás métodos, pero hay algunas salvedades (ver ?sort).
-Este fue un gran evento para nosotros y lo celebramos hasta el cansancio. (En realidad, no).
-¿Por qué los valores predeterminados son como son? ¿Por qué funciona como lo hace?
-La respuesta es sencilla: el autor principal lo diseñó originalmente para su propio uso. Así lo quería. Le parece una forma más natural y rápida de escribir código, que también se ejecuta más rápidamente.
-¿No se hace esto ya con `with()` y `subset()` en `base`?
-Algunas de las características que hemos comentado hasta ahora son afirmativas. El paquete se basa en la funcionalidad básica. Hace el mismo tipo de cosas, pero requiere menos código y se ejecuta mucho más rápido si se usa correctamente.
-¿Por qué `X[Y]` también devuelve todas las columnas de `Y`? ¿No debería devolver un subconjunto de `X`?
-Esto se modificó en la versión 1.5.3 (febrero de 2011). Desde entonces, `X[Y]` incluye las columnas no unidas de `Y`. Nos referimos a esta característica como _ámbito heredado de unión_ porque no solo las columnas `X` están disponibles para la expresión `j`, sino también las columnas `Y`. La desventaja es que `X[Y]` es menos eficiente ya que cada elemento de las columnas no unidas de `Y` se duplica para que coincida con la cantidad (probablemente grande) de filas en `X` que coinciden. Por lo tanto, recomendamos encarecidamente `X[Y, j]` en lugar de `X[Y]`. Consulte [próxima pregunta frecuente]{1}.
-¿Cuál es la diferencia entre `X[Y]` y `merge(X, Y)`? {#MergeDiff}
-`X[Y]` es una unión, que busca las filas de `X` utilizando `Y` (o la clave de `Y` si tiene una) como índice.
-`Y[X]` es una unión, que busca las filas de `Y` usando `X` (o la clave de `X` si tiene una) como índice.
-`merge(X,Y)`[^1] hace ambas cosas al mismo tiempo. La cantidad de filas de `X[Y]` e `Y[X]` generalmente difieren, mientras que la cantidad de filas devueltas por `merge(X, Y)` y `merge(Y, X)` es la misma.
-_PERO_ eso pasa por alto el punto principal. La mayoría de las tareas requieren que se haga algo con los datos después de una unión o fusión. ¿Por qué fusionar todas las columnas de datos, solo para usar un pequeño subconjunto de ellas después? Puede sugerir `merge(X[ , ColsNeeded1], Y[ , ColsNeeded2])`, pero eso requiere que el programador determine qué columnas son necesarias. `X[Y, j]` en data.table hace todo eso en un solo paso por usted. Cuando escribe `X[Y, sum(foo*bar)]`, data.table inspecciona automáticamente la expresión `j` para ver qué columnas utiliza. Creará subconjuntos de esas columnas solamente; las otras se ignoran. Solo se crea memoria para las columnas que utiliza `j` y las columnas `Y` disfrutan de las reglas de reciclaje estándar de R dentro del contexto de cada grupo. Digamos que `foo` está en `X` y `bar` está en `Y` (junto con otras 20 columnas en `Y`). ¿No es `X[Y, sum(foo*bar)]` más rápido de programar y más rápido de ejecutar que una `fusión` de todo desperdiciada seguida de un `subconjunto`?
-[^1]: Aquí nos referimos al _método_ `merge` para data.table o al método `merge` para `data.frame` ya que ambos métodos funcionan de la misma manera en este sentido. Vea `?merge.data.table` y [a continuación]{1} para obtener más información sobre la resolución de métodos.
-¿Algo más sobre `X[Y, sum(foo*bar)]`?
-Este comportamiento cambió en la versión v1.9.4 (septiembre de 2014). Ahora realiza la unión `X[Y]` y luego ejecuta `sum(foo*bar)` sobre todas las filas; es decir, `X[Y][ , sum(foo*bar)]`. Antes ejecutaba `j` para cada _grupo_ de `X` con el que coincide cada fila de `Y`. Eso todavía se puede hacer porque es muy útil, pero ahora debe ser explícito y especificar `by = .EACHI`, _es decir_, `X[Y, sum(foo*bar), by = .EACHI]`. A esto lo llamamos _agrupamiento por cada `i`_ (grouping by each `i`).
-Por ejemplo (complicándolo aún más al usar _join legacyed scope_, también):
-Eso está bien. ¿Cómo se las arregló para cambiarlo dado que los usuarios dependían del comportamiento anterior?
-La solicitud de cambio provino de los usuarios. La sensación era que si una consulta está haciendo agrupación, entonces debería estar presente un `by=` explícito por razones de legibilidad del código. Se proporcionó una opción para devolver el comportamiento anterior: `options(datatable.old.bywithoutby)`, por defecto `FALSE`. Esto permitió la actualización para probar las otras nuevas características / correcciones de errores en v1.9.4, con la migración posterior de cualquier consulta by-without-by cuando esté lista agregando `by=.EACHI` a ellas. Conservamos 47 pruebas previas al cambio y las agregamos nuevamente como pruebas nuevas, probadas bajo `options(datatable.old.bywithoutby=TRUE)`. Agregamos un mensaje de inicio sobre el cambio y cómo volver al comportamiento anterior. Después de 1 año, la opción quedó obsoleta con una advertencia cuando se usaba. Después de 2 años, se eliminó la opción de volver al comportamiento anterior.
-De los 66 paquetes en CRAN o Bioconductor que dependían de data.table o lo importaban en el momento de la publicación de la versión 1.9.4 (ahora son más de 300), solo uno se vio afectado por el cambio. Esto podría deberse a que muchos paquetes no tienen pruebas exhaustivas o simplemente a que los paquetes posteriores no utilizaban mucho la agrupación por cada fila en `i`. Siempre probamos la nueva versión con todos los paquetes dependientes antes de su publicación y coordinamos los cambios con esos encargados de mantenimiento. Por lo tanto, esta versión fue bastante sencilla en ese sentido.
-Otra razón convincente para realizar el cambio fue que, anteriormente, no había una forma eficiente de lograr lo que `X[Y, sum(foo*bar)]` hace ahora. Había que escribir `X[Y][ , sum(foo*bar)]`. Eso no era óptimo porque `X[Y]` unía todas las columnas y las pasaba todas a la segunda consulta compuesta sin saber que solo se necesitaban `foo` y `bar`. Para resolver ese problema de eficiencia, se requirió un esfuerzo de programación adicional: `X[Y, list(foo, bar)][ , sum(foo*bar)]`. El cambio a `by = .EACHI` ha simplificado esto al permitir que ambas consultas se expresen dentro de una única consulta `DT[...]` para lograr eficiencia.
-Sintaxis general
-¿Cómo puedo evitar escribir una expresión `j` muy larga? Se dijo que uno debería usar los nombres de columna, pero tengo muchas columnas.
-Al agrupar, la expresión `j` puede usar nombres de columna como variables, como usted sabe, pero también puede usar un símbolo reservado `.SD` que hace referencia al **S**ubconjunto de **D**ata.table para cada grupo (excluyendo las columnas de agrupación). Entonces, para sumar todas tus columnas, es solo `DT[ , lapply(.SD, sum), by = grp]`. Puede parecer complicado, pero es rápido de escribir y rápido de ejecutar. Ten en cuenta que no tienes que crear una función anónima. El objeto `.SD` se implementa internamente de manera eficiente y es más eficiente que pasar un argumento a una función. Pero si el símbolo `.SD` aparece en `j`, data.table debe completar `.SD` por completo para cada grupo, incluso si `j` no lo usa todo.
-Por lo tanto, no haga, por ejemplo, `DT[ , sum(.SD[[\"sales\"]]), by = grp]`. Eso funciona, pero es ineficiente y poco elegante. `DT[ , sum(sales), by = grp]` es lo que se pretendía, y podría ser cientos de veces más rápido. Si usa _todos_ los datos en `.SD` para cada grupo (como en `DT[ , lapply(.SD, sum), by = grp]`), entonces ese es un muy buen uso de `.SD`. Si está usando _varias_ pero no _todas_ las columnas, puede combinar `.SD` con `.SDcols`; Consulte `?data.table`.
-¿Por qué el valor predeterminado para `mult` ahora es `\"all\"`?
-En la v1.5.3, el valor predeterminado se cambió a `\"all\"`. Cuando `i` (o la clave de `i` si tiene una) tiene menos columnas que la clave de `x`, `mult` ya estaba configurado en `\"all\"` automáticamente. Cambiar el valor predeterminado hace que esto sea más claro y fácil para los usuarios, ya que se producía con bastante frecuencia.
-En versiones anteriores a la v1.3, `\"all\"` era más lento. Internamente, `\"all\"` se implementaba uniendo mediante `\"first\"`, luego nuevamente desde cero mediante `\"last\"`, después de lo cual se realizaba una comparación entre ellos para calcular el lapso de coincidencias en `x` para cada fila en `i`. Sin embargo, la mayoría de las veces unimos filas individuales, donde `\"first\"`, `\"last\"` y `\"all\"` devuelven el mismo resultado. Preferimos el máximo rendimiento para la mayoría de las situaciones, por lo que el valor predeterminado elegido fue `\"first\"`. Al trabajar con una clave no única (generalmente una sola columna que contiene una variable de agrupación), `DT[\"A\"]` devolvió la primera fila de ese grupo, por lo que se necesitaba `DT[\"A\", mult = \"all\"]` para devolver todas las filas de ese grupo.
-En la v1.4, la búsqueda binaria en C se modificó para que se ramificara en el nivel más profundo para encontrar el primero y el último. Es probable que esa ramificación se produzca dentro de las mismas páginas finales de RAM, por lo que ya no debería haber una desventaja de velocidad al establecer `mult` como `\"all\"` de forma predeterminada. Advertimos que el valor predeterminado podría cambiar e hicimos el cambio en la v1.5.3.
-Una versión futura de data.table puede permitir una distinción entre una clave y una _clave única_. Internamente, `mult = \"all\"` funcionaría más como `mult = \"first\"` cuando todas las columnas de clave de `x` se unieran y la clave de `x` fuera una clave única. data.table necesitaría verificaciones en la inserción y actualización para asegurarse de que se mantenga una clave única. Una ventaja de especificar una clave única sería que data.table garantizaría que no se puedan insertar duplicados, además del rendimiento.
-Estoy usando `c()` en `j` y obtengo resultados extraños.
-Esta es una fuente común de confusión. En `data.frame` se acostumbra, por ejemplo:
-que devuelve las dos columnas. En data.table usted sale que puede usar los nombres de las columnas directamente y puede intentar:
-pero esto devuelve un vector. Recuerde que la expresión `j` se evalúa dentro del entorno de `DT` y `c()` devuelve un vector. Si se requieren 2 o más columnas, use `list()` o `.()` en su lugar:
-`c()` también puede ser útil en un data.table, pero su comportamiento es diferente al de `[.data.frame`.
-He creado una tabla compleja con muchas columnas. Quiero usarla como plantilla para una nueva tabla; _es decir_, crear una nueva tabla sin filas, pero con los nombres y tipos de columnas copiados de mi tabla. ¿Puedo hacer eso fácilmente?
-Sí. Si su tabla compleja se llama `DT`, prueba `NEWDT = DT[0]`.
-¿Un data.table nulo es lo mismo que `DT[0]`?
-No. Con "data.table null" nos referimos al resultado de `data.table(NULL)` o `as.data.table(NULL)`; _es decir_,
-El data.table|`frame` nulo es `NULL` con algunos atributos adjuntos, lo que significa que ya no es `NULL`. En R, solo `NULL` puro es `NULL`, como se prueba con `is.null()`. Cuando nos referimos al \"data.table null\", usamos null en minúscula para ayudar a distinguirlo de `NULL` en mayúscula. Para probar el data.table nulo, use `length(DT) == 0` o `ncol(DT) == 0` (`length` es un poco más rápido, ya que es una función primitiva).
-Un data.table _vacío_ (`DT[0]`) tiene una o más columnas, todas las cuales están vacías. Esas columnas vacías aún tienen nombres y tipos.
-¿Por qué se ha eliminado el alias `DT()`? {#DTremove1}
-`DT` se introdujo originalmente como un contenedor para una lista de expresiones en `j`. Dado que `DT` era un alias para data.table, era una forma conveniente de encargarse del reciclaje silencioso en los casos en que cada elemento de la lista `j` evaluaba en longitudes diferentes. Sin embargo, el alias era una de las razones por las que la agrupación era lenta.
-A partir de la v1.3, `list()` o `.()` se deben pasar en su lugar al argumento `j`. Esto es mucho más rápido, especialmente cuando hay muchos grupos. Internamente, este fue un cambio no trivial. El reciclaje de vectores ahora se realiza internamente, junto con varias otras mejoras de velocidad para la agrupación.
-Pero mi código usa `j = DT(...)` y funciona. La pregunta frecuente anterior dice que `DT()` se ha eliminado. {#DTremove2}
-Entonces está usando una versión anterior a la 1.5.3. Antes de la versión 1.5.3, `[.data.table` detectaba el uso de `DT()` en `j` y lo reemplazaba automáticamente con una llamada a `list()`. Esto era para ayudar a la transición de los usuarios existentes.
-¿Cuáles son las reglas de alcance para las expresiones en `j`?
-Piense en el subconjunto como un entorno donde todos los nombres de columna son variables. Cuando se utiliza una variable `foo` en `j` de una consulta como `X[Y, sum(foo)]`, se busca `foo` en el siguiente orden:
-===== 1. El ámbito del subconjunto de `X`; _es decir_, los nombres de columna de `X`.===== ===== 2. El ámbito de cada fila de `Y`; _es decir_, los nombres de columna de `Y` (_ámbito heredado de join_)===== ===== 3. El ámbito del marco de llamada; _p.ej._, la línea que aparece antes de la consulta data.table.===== ===== 4. Ejercicio para el lector: ¿entonces se extiende a través de los marcos de llamada o va directamente al entorno global `globalenv()`?===== ===== 5. El entorno global=====
-Esto se denomina _alcance léxico_ como se explica en [Preguntas frecuentes de R 3.3.1]{1}. Sin embargo, el entorno en el que se creó la función no es relevante, porque _no hay función_. No se pasa ninguna _función_ anónima a `j`. En cambio, se pasa un _cuerpo_ anónimo a `j`; por ejemplo,
-Algunos lenguajes de programación llaman a esto _lambda_.
-¿Puedo rastrear la expresión `j` a medida que se ejecuta a través de los grupos? {#j-trace}
-Intente algo como esto:
-Dentro de cada grupo, ¿por qué las variables de grupo tienen una longitud de 1?
-[Arriba]{1}, `x` es una variable de agrupamiento y (a partir de v1.6.1) tiene `length` 1 (si se inspecciona o se usa en `j`). Es por eficiencia y conveniencia. Por lo tanto, no hay diferencia entre las siguientes dos declaraciones:
-Si necesita el tamaño del grupo actual, use `.N` en lugar de llamar a `length()` en cualquier columna.
-Solo se imprimen las primeras 10 filas, ¿cómo imprimo más?
-Aquí suceden dos cosas. Primero, si la cantidad de filas en una tabla de datos es grande (`> 100` por defecto), entonces se imprime un resumen de la tabla de datos en la consola por defecto. Segundo, el resumen de una tabla de datos grande se imprime tomando las `n` filas superiores e inferiores (`= 5` por defecto) de la tabla de datos y solo imprimiendo esas. Ambos parámetros (cuándo activar un resumen y qué parte de una tabla utilizar como resumen) se pueden configurar mediante el mecanismo `options` de R o llamando directamente a la función `print`.
-Por ejemplo, para hacer que el resumen de una tabla data.table solo se realice cuando una tabla data.table tenga más de 50 filas, puede `options(datatable.print.nrows = 50)`. Para deshabilitar por completo el resumen predeterminado, puede `options(datatable.print.nrows = Inf)`. También puede llamar a `print` directamente, como en `print(your.data.table, nrows = Inf)`.
-Si desea mostrar más que las 10 filas superiores (e inferiores) de un resumen de una tabla data.table (digamos que desea 20), configure `options(datatable.print.topn = 20)`, por ejemplo. Nuevamente, también podrías llamar a `print` directamente, como en `print(your.data.table, topn = 20)`.
-Con una unión `X[Y]`, ¿qué sucede si `X` contiene una columna llamada `\"Y\"`?
-Cuando `i` es un nombre único como `Y`, se evalúa en el marco de llamada. En todos los demás casos, como llamadas a `.()` u otras expresiones, `i` se evalúa dentro del alcance de `X`. Esto facilita _autouniones_ sencillas como `X[J(unique(colA)), mult = \"first\"]`.
-`X[Z[Y]]` está fallando porque `X` contiene una columna `\"Y\"`. Me gustaría que utilizara la tabla `Y` en el ámbito de llamada.
-La parte `Z[Y]` no es un nombre único, por lo que se evalúa dentro del marco de `X` y se produce el problema. Pruebe `tmp = Z[Y]; X[tmp]`. Esto es robusto para `X` que contiene una columna `\"tmp\"` porque `tmp` es un nombre único. Si a menudo encuentra conflictos de este tipo, una solución simple puede ser nombrar todas las tablas en mayúsculas y todos los nombres de columnas en minúsculas, o algún esquema similar.
-¿Puede explicar con más detalle por qué data.table está inspirado en la sintaxis `A[B]` en `base`?
-Considere la sintaxis `A[B]` utilizando una matriz de ejemplo `A`:
-Para obtener las celdas `(1, 2) = 5` y `(3, 3) = 11` muchos usuarios (creemos) pueden intentar esto primero:
-Sin embargo, esto devuelve la unión de esas filas y columnas. Para hacer referencia a las celdas, se requiere una matriz de 2 columnas. `?Extract` dice:
-Al indexar matrices por `[` un único argumento `i` puede ser una matriz con tantas columnas como dimensiones de `x`; el resultado es entonces un vector con elementos correspondientes a los conjuntos de índices en cada fila de `i`.
-Probemos de nuevo.
-Una matriz es una estructura bidimensional con nombres de filas y nombres de columnas. ¿Podemos hacer lo mismo con los nombres?
-Entonces sí podemos. ¿Podemos hacer lo mismo con un `data.frame`?
-Pero, observe que el resultado fue convertido a `character.`. R convirtió `A` a `matrix` primero para que la sintaxis pudiera funcionar, pero el resultado no es ideal. Intentemos hacer que `B` sea un `data.frame`.
-Por lo tanto, no podemos subconjunto de un `data.frame` por un `data.frame` en R base. ¿Qué pasa si queremos nombres de fila y nombres de columna que no sean `character` sino `integer` o `float`? ¿Qué pasa si queremos más de 2 dimensiones de tipos mixtos? Ingrese data.table.
-Además, las matrices, especialmente las matrices dispersas, a menudo se almacenan en una tupla de 3 columnas: `(i, j, value)`. Esto puede considerarse como un par clave-valor donde `i` y `j` forman una clave de 2 columnas. Si tenemos más de un valor, tal vez de diferentes tipos, podría verse como `(i, j, val1, val2, val3, ...)`. Esto se parece mucho a un `data.frame`. Por lo tanto, data.table extiende `data.frame` de modo que un `data.frame` `X` puede ser subconjunto de un `data.frame` `Y`, lo que lleva a la sintaxis `X[Y]`.
-¿Se puede cambiar R base para hacer esto, en lugar de un nuevo paquete?
-`data.frame` se usa _en todas partes_ y por eso es muy difícil hacer _algun_ cambio. data.table _hereda_ de `data.frame`. También _es_ un `data.frame`. Un data.table _se puede_ pasar a cualquier paquete que _solo_ acepte `data.frame`. Cuando ese paquete usa la sintaxis `[.data.frame` en el data.table, funciona. Funciona porque `[.data.table` busca ver desde dónde fue llamado. Si fue llamado desde un paquete de ese tipo, `[.data.table` redirecciona a `[.data.frame`.
-He oído que la sintaxis de data.table es análoga a la de SQL.
-Sí:
-===== - `i` $$$\\Leftrightarrow$$$ donde===== ===== - `j` $$$\\Leftrightarrow$$$ seleccionar===== ===== - `:=` $$$\\Leftrightarrow$$$ actualizar===== ===== - `by` $$$\\Leftrightarrow$$$ agrupar por===== ===== - `i` $$$\\Leftrightarrow$$$ ordenar por (en sintaxis compuesta)===== ===== - `i` $$$\\Leftrightarrow$$$ tener (en sintaxis compuesta)===== ===== - `nomatch = NA` $$$\\Leftrightarrow$$$ unión externa===== ===== - `nomatch = NULL` $$$\\Leftrightarrow$$$ unión interna join===== ===== - `mult = \"first\"|\"last\"` $$$\\Leftrightarrow$$$ N/A porque SQL es inherentemente desordenado===== ===== - `roll = TRUE` $$$\\Leftrightarrow$$$ N/A porque SQL es inherentemente desordenado=====
-La forma general es:
-Una ventaja clave de los vectores de columna en R es que están _ordenados_, a diferencia de SQL[^2]. Podemos usar funciones ordenadas en consultas `data.table` como `diff()` y podemos usar _cualquier_ función R de cualquier paquete, no solo las funciones que están definidas en SQL. Una desventaja es que los objetos R deben caber en la memoria, pero con varios paquetes R como `ff`, `bigmemory`, `mmap` e `indexing`, esto está cambiando.
-[^2]: Puede resultar sorprendente saber que `select top 10 * from ...` _no_ devuelve de manera confiable las mismas filas a lo largo del tiempo en SQL. Debe incluir una cláusula `order by` o usar un índice agrupado para garantizar el orden de las filas; _es decir_, SQL es inherentemente desordenado.
-¿Cuáles son las diferencias de sintaxis más pequeñas entre `data.frame` y data.table? {#SmallerDiffs}
-===== - `DT[3]` se refiere a la 3ra _fila_, pero `DF[3]` se refiere a la 3ra _columna_===== ===== - `DT[3, ] == DT[3]`, pero `DF[ , 3] == DF[3]` (de manera algo confusa en data.frame, mientras que data.table es consistente)===== ===== - Por esta razón decimos que la coma es _opcional_ en `DT`, pero no opcional en `DF`===== ===== - `DT[[3]] == DF[, 3] == DF[[3]]`===== ===== - `DT[i, ]`, donde `i` es un solo entero, devuelve una sola fila, al igual que `DF[i, ]`, pero a diferencia de un subconjunto de una sola fila de la matriz que devuelve un vector.===== ===== - `DT[ , j]` donde `j` es un entero único, devuelve un data.table de una columna, a diferencia de `DF[, j]` que devuelve un vector de forma predeterminada===== ===== - `DT[ , \"colA\"][[1]] == DF[ , \"colA\"]`.===== ===== - `DT[ , colA] == DF[ , \"colA\"]` (actualmente en data.table v1.9.8 pero está a punto de cambiar, consulte las notas de la versión)===== ===== - `DT[ , list(colA)] == DF[ , \"colA\", drop = FALSE]`===== ===== - `DT[NA]` devuelve 1 fila de `NA`, pero `DF[NA]` devuelve una copia completa de `DF` que contiene `NA` en todas partes. El símbolo `NA` es de tipo `lógico` en R y, por lo tanto, `[.data.frame` lo recicla. La intención del usuario probablemente era `DF[NA_integer_]`. `[.data.table` desvía a esta intención probable automáticamente, para mayor comodidad.===== ===== - `DT[c(TRUE, NA, FALSE)]` trata a `NA` como `FALSE`, pero `DF[c(TRUE, NA, FALSE)]` devuelve===== `NA` filas para cada `NA` ===== - `DT[ColA == ColB]` es más simple que `DF[!is.na(ColA) & !is.na(ColB) & ColA == ColB, ]`===== ===== - `data.frame(list(1:2, \"k\", 1:4))` crea 3 columnas, data.table crea una columna `list`.===== ===== - `check.names` es por defecto `TRUE` en `data.frame` pero `FALSE` en data.table, para mayor comodidad.===== ===== - `data.table` siempre ha establecido `stringsAsFactors=FALSE` de forma predeterminada. En R 4.0.0 (abril de 2020), el valor predeterminado de `data.frame` se cambió de `TRUE` a `FALSE` y ya no hay ninguna diferencia en este sentido; Consulte [stringsAsFactors, Kurt Hornik, febrero de 2020]{1}.===== ===== - Los vectores atómicos en las columnas de `list` se contraen cuando se imprimen usando `\", \"` en `data.frame`, pero `\",\"` en data.table con una coma final después del sexto elemento para evitar la impresión accidental de objetos incrustados grandes.===== ===== - A diferencia de data.frames, un data.table no puede almacenar filas sin columnas, ya que las filas se consideran hijos de las columnas: `nrow(DF[, 0])` devuelve la cantidad de filas, mientras que `nrow(DT[, 0])` siempre devuelve 0; pero consulte el problema [#2422]{2}.=====
-En `[.data.frame`, muy a menudo establecemos `drop = FALSE`. Cuando nos olvidamos, pueden surgir errores en casos extremos en los que se seleccionan columnas individuales y, de repente, se devuelve un vector en lugar de una sola columna `data.frame`. En `[.data.table` aprovechamos la oportunidad para hacerlo coherente y eliminamos `drop`.
-Cuando se pasa un data.table a un paquete que no es compatible con data.table, ese paquete no se preocupa por ninguna de estas diferencias; simplemente funciona.
-Estoy usando `j` solo por su efecto secundario, pero sigo obteniendo datos devueltos. ¿Cómo puedo detener eso?
-En este caso, `j` se puede encapsular con `invisible()`; por ejemplo, `DT[ , invisible(hist(colB)), by = colA]`[^3]
-[^3]: _por ejemplo_, `hist()` devuelve los puntos de interrupción además de trazar en el dispositivo gráfico.
-¿Por qué `[.data.table` ahora tiene un argumento `drop` de la v1.5?
-Para que data.table pueda heredar de `data.frame` sin usar `...`. Si usáramos `...`, no se detectarían los nombres de argumentos no válidos.
-El argumento `drop` nunca lo usa `[.data.table`. Es un marcador de posición para paquetes que no son compatibles con data.table cuando usan la sintaxis `[.data.frame` directamente en un data.table.
-¡Las uniones continuas son geniales y muy rápidas! ¿Fue difícil de programar?
-La fila que prevalece en o antes de la fila `i` es la fila final que prueba la búsqueda binaria de todos modos. Entonces `roll = TRUE` es esencialmente solo un cambio en el código C de búsqueda binaria para devolver esa fila.
-¿Por qué `DT[i, col := value]` devuelve todo el `DT`? Esperaba o bien un valor no  visible (coherente con `<-`), o bien un mensaje o valor de retorno que contenga cuántas filas se actualizaron. No es obvio que los datos se hayan actualizado por referencia.
-Esto ha cambiado en v1.8.3 para cumplir con sus expectativas. Actualice.
-Se devuelve todo el `DT` (ahora de forma invisible) para que la sintaxis compuesta pueda funcionar; _p. ej._, `DT[i, done := TRUE][ , sum(done)]`. La cantidad de filas actualizadas se devuelve cuando `verbose` es `TRUE`, ya sea por consulta o de forma global utilizando `options(datatable.verbose = TRUE)`.
-Bien, gracias. ¿Qué tenía de difícil que el resultado de `DT[i, col := value]` se devolviera de forma invisible?
-R fuerza internamente la visibilidad para `[`. El valor de la columna "eval" en FunTab (ver [src/main/names.c]{1}) para `[` es `0`, lo que significa que se fueza `R_Visible` (ver [R-Internals sección 1.6]{2}). Por lo tanto, cuando intentábamos usar `invisible()` o configurar `R_Visible` en `0` directamente nosotros mismos, `eval` en [src/main/eval.c]{3} lo activaba nuevamente.
-Para resolver este problema, la clave era dejar de intentar detener la ejecución del método de impresión después de un `:=`. En cambio, dentro de `:=` ahora (desde v1.8.3) configuramos un indicador global que el método de impresión usa para saber si imprimir o no.
-¿Por qué a veces tengo que escribir `DT` dos veces después de usar `:=` para imprimir el resultado en la consola?
-Este es un inconveniente desafortunado para que funcione [#869]{1}. Si se usa un `:=` dentro de una función sin `DT[]` antes del final de la función, entonces la próxima vez que se escriba `DT` en la consola interactiva de R, no se imprimirá nada. Pero al repetir `DT`, se imprimirá. Para evitar esto: incluya un `DT[]` después del último `:=` en su función. Si eso no es posible (por ejemplo, no es una función que puede cambiar), entonces se garantiza que `print(DT)` y `DT[]` en la consola se imprimirán. Como antes, agregar un `[]` adicional al final de la consulta `:=` es un estilo recomendado para actualizar y luego imprimir; por ejemplo, `DT[,foo:=3L][]`.
-He notado que `base::cbind.data.frame` (y `base::rbind.data.frame`) parecen ser modificados por data.table. ¿Cómo es esto posible? ¿Por qué?
-Fue una solución temporal, de último recurso, antes de que se solucionara la resolución de métodos S3 de rbind y cbind en R >= 4.0.0. Básicamente, el problema era que `data.table` hereda de `data.frame`, _y_ `base::cbind` y `base::rbind` (de manera única) realizan su propio envío S3 internamente, como lo documenta `?cbind`. La solución alternativa de `data.table` fue agregar un bucle `for` al comienzo de cada función directamente en `base`. Esa modificación se realizaba de manera dinámica, _es decir_, se obtenía la definición `base` de `cbind.data.frame`, se agregaba el bucle `for` al comienzo y luego se asignaba nuevamente a `base`. Esta solución fue diseñada para ser robusta ante diferentes definiciones de `base::cbind.data.frame` en diferentes versiones de R, incluidos cambios futuros desconocidos. Funcionó bien. Los requisitos en competencia fueron:
-===== - `cbind(DT, DF)` debe funcionar. La definición de `cbind.data.table` no funcionaba porque `base::cbind` realiza su propio envío S3 y requería (antes de R 4.0.0) que el _primer_ método `cbind` para cada objeto que se le pasa sea _idéntico_. Esto no es cierto en `cbind(DT, DF)` porque el primer método para `DT` es `cbind.data.table` pero el primer método para `DF` es `cbind.data.frame`. `base::cbind` luego pasaba a su código `bind` interno que al parecer trata a `DT` como una lista regular, y devuelve una salida `matrix` de aspecto muy extraño e inutilizable. Consulte [a continuación]{1}. No podemos simplemente recomendar a los usuarios que no llamen a `cbind(DT, DF)` porque los paquetes como `ggplot2` hacen tal llamada ([prueba 167.2]{2}).=====
-===== - Naturalmente, esto nos llevó a intentar enmascarar `cbind.data.frame`. Dado que un data.table es un `data.frame`, `cbind` encontraría el mismo método tanto para `DT` como para `DF`. Sin embargo, esto tampoco funcionó porque `base::cbind` parece encontrar los métodos en `base` primero; _es decir_, `base::cbind.data.frame` no se puede enmascarar.=====
-===== - Finalmente, intentamos enmascarar `cbind` en sí (v1.6.5 y v1.6.6). Esto permitió que `cbind(DT, DF)` funcionara, pero introdujo problemas de compatibilidad con el paquete `IRanges`, ya que `IRanges` también enmascara `cbind`. Funcionó si `IRanges` estaba más abajo en la ruta `search()` que data.table, pero si `IRanges` estaba más arriba que data.table, `cbind` nunca se llamaba, y la salida `matrix` de aspecto extraño se produciría nuevamente (ver [a continuación]{1}).=====
-Muchas gracias al equipo central de R por solucionar el problema en septiembre de 2019. data.table v1.12.6+ ya no aplica la solución alternativa en R >= 4.0.0.
-He leído sobre la resolución de métodos (por ejemplo, `merge` puede o no despacharse a `merge.data.table`) pero ¿cómo sabe R cómo despachar? ¿Son los 'dots' (puntos)  significativos o especiales? ¿Cómo diantres sabe R qué función despachar y cuándo? {#r-dispatch}
-Esta pregunta surge bastante seguido, pero en realidad es increíblemente simple. Una función como `merge` es _genérica_ si consiste en una llamada a `UseMethod`. Cuando ve a gente hablando sobre si las funciones son o no funciones _genéricas_, simplemente están escribiendo la función sin `()` después, mirando el código del programa dentro de ella y si ven una llamada a `UseMethod` entonces es _genérica_. ¿Qué hace `UseMethod`? Literalmente pega el nombre de la función junto con la clase del primer argumento, separados por un punto (`.`) y luego llama a esa función, pasando los mismos argumentos. Es así de simple. Por ejemplo, `merge(X, Y)` contiene una llamada a `UseMethod`, lo que significa que luego _despacha_ (es decir, llama) a `paste(\"merge\", class(X), sep = \".\")`. Las funciones con puntos en su nombre pueden ser métodos o no. El punto es irrelevante en realidad, más allá de que el punto es el separador que usa `UseMethod`. Conociendo este antecedente debería ahora quedar más claro por qué, por ejemplo, es obvio para la gente de R que `as.data.table.data.frame` es el método `data.frame` para la función genérica `as.data.table`. Además, puede ayudar a aclarar que sí, tiene usted razón, no es obvio solo por su nombre que `ls.fit` no sea el método fit de la función genérica `ls`. Solo puedes saberlo escribiendo `ls` (no `ls()`) y observando que no es una simple llamada a `UseMethod`.
-Ahora puede que se pregunte: ¿dónde está documentado esto en R? Respuesta: es bastante claro, pero primero debe saber buscar en `?UseMethod` y _ese_ archivo de ayuda contiene:
-Cuando se aplica una función que llama a `UseMethod('fun')` a un objeto con el atributo de clase `c('first', 'second')`, el sistema busca una función llamada `fun.first` y, si la encuentra, la aplica al objeto. Si no se encuentra dicha función, se prueba una función llamada `fun.second`. Si ningún nombre de clase produce una función adecuada, se utiliza la función `fun.default`, si existe, o se produce un error.
-Afortunadamente, una búsqueda en Internet de \"How does R method dispatch work\" (al momento de escribir esto) muestra la página de ayuda `?UseMethod` en los primeros enlaces. Es cierto que otros enlaces descienden rápidamente a las complejidades de S3 vs S4, genéricos internos, etc.
-Sin embargo, características como la resolución básica de métodos de S3 (pegar el nombre de la función junto con el nombre de la clase) es la razón por la que a algunas personas de R les encanta R. Es muy simple. No se requiere ningún registro o firma complicados. No hay mucho que aprender. Para crear el método `merge` para data.table, todo lo que se requirió, literalmente, fue simplemente crear una función llamada `merge.data.table`.
-¿Por qué `T` y `F` se comportan de manera diferente a `TRUE` y `FALSE` en algunas consultas `data.table`?
-El uso de `T` y `F` como abreviaturas de `TRUE` y `FALSE` en `data.table` puede generar un comportamiento inesperado. Esto se debe a que `T` y `F` son variables globales que se pueden redefinir, lo que hace que se las trate como nombres de variables en lugar de constantes lógicas. Este problema no ocurre con `TRUE` y `FALSE`. Evitar `T` y `F` es un consejo para usar R en general, pero aparece en `data.table` de algunas maneras quizás sorprendentes, por ejemplo:
-Como consejo general, `lintr::T_and_F_symbol_linter()` detecta el uso de `T` y `F` y sugiere reemplazarlos con `TRUE` y `FALSE` para evitar tales problemas.
-Preguntas relacionadas con el tiempo de cómputo
-Tengo 20 columnas y una gran cantidad de filas. ¿Por qué una expresión de una columna es tan rápida?
-Varias razones:
-===== - Solo esa columna está agrupada, las otras 19 se ignoran porque data.table inspecciona la expresión `j` y se da cuenta de que no usa las otras columnas.===== ===== - Se realiza una asignación de memoria solo para el grupo más grande, luego esa memoria se reutiliza para los otros grupos. Hay muy poca basura para recolectar.===== ===== - R es un almacén de columnas en memoria; es decir, las columnas son contiguas en la RAM. Se minimizan las recuperaciones de páginas desde la RAM a la caché L2.=====
-No tengo una `key` en una tabla grande, pero la agrupación es realmente rápida. ¿Por qué?
-data.table usa ordenación por radix. Esto es significativamente más rápido que otros algoritmos de ordenación. Vea [nuestras presentaciones]{1} para obtener más información, en particular de useR!2015 Dinamarca.
-Esta es también una de las razones por las que `setkey()` es rápido.
-Cuando no se establece ninguna `key`, o agrupamos en un orden diferente al de la clave, lo llamamos un `by` _ad hoc_.
-¿Por qué la agrupación por columnas en la clave es más rápida que un `by` _ad hoc_?
-Porque cada grupo es contiguo en la RAM, lo que minimiza las recuperaciones de páginas y la memoria se puede copiar en masa (`memcpy` en C) en lugar de hacer un bucle en C.
-¿Qué son los índices primarios y secundarios en data.table?
-Manual: [`?setkey`]{1} S.O.: [¿Cuál es el propósito de establecer una clave en data.table?]{2}
-`setkey(DT, col1, col2)` ordena las filas por la columna `col1` y luego, dentro de cada grupo de `col1`, ordena por `col2`. Este es un _índice primario_. El orden de las filas se cambia _por referencia_ en la RAM. Las uniones y grupos subsiguientes en esas columnas clave aprovechan el orden de clasificación para lograr eficiencia. (Imagínese lo difícil que sería buscar un número de teléfono en una guía telefónica impresa si no estuviera ordenado por apellido y luego por nombre. Eso es literalmente todo lo que hace `setkey`. Ordena las filas por las columnas que usted especifica). El índice no utiliza ninguna RAM. Simplemente cambia el orden de las filas en la RAM y marca las columnas clave. Análogo a un _índice "clustered"_ en SQL.
-Sin embargo, solo puede tener una clave principal porque los datos solo se pueden ordenar físicamente en RAM de una manera a la vez. Elija el índice principal para que sea el que use con más frecuencia (por ejemplo, `[id, fecha]`). A veces no hay una opción obvia para la clave principal, o necesita unir y agrupar muchas columnas diferentes en diferentes órdenes. Ingrese un índice secundario. Esto usa memoria (`4*nrow` bytes independientemente del número de columnas en el índice) para almacenar el orden de las filas por las columnas que especifique, pero en realidad no reordena las filas en RAM. Las uniones y grupos posteriores aprovechan el orden de la clave secundaria, pero necesitan _saltar_ a través de ese índice, por lo que no son tan eficientes como los índices primarios. Pero aún así, es mucho más rápido que un escaneo vectorial completo. No hay límite para la cantidad de índices secundarios, ya que cada uno es solo un vector de ordenamiento diferente. Por lo general, no necesita crear índices secundarios. Se crean automáticamente y se usan automáticamente con el uso normal de data.table. _Por ejemplo_,`DT[someCol == someVal, ]` y `DT[someCol %in% someVals, ]` crearán el índice secundario, lo adjuntarán, y luego lo usarán. Esto es más rápido en data.table que un escaneo vectorial, por lo que la indexación automática está activada de manera predeterminada, ya que no hay una penalización inicial. Existe una opción para desactivar la indexación automática; _p. ej._, si de alguna manera se están creando muchos índices, e incluso la cantidad relativamente pequeña de memoria adicional se vuelve demasiado grande.
-Usamos las palabras _index_ y _key_ indistintamente.
-Mensajes de error
-\"Could not find function `DT`\" [\"No se pudo encontrar la función `DT`\"]
-Vea arriba [aquí]{1} y [aquí]{2}.
-\"unused argument(s) (`MySum = sum(v)`)\" [\"argumento(s) no utilizado(s) (`MySum = sum(v)`)\"]
-Este error es generado por `DT[ , MySum = sum(v)]`. `DT[ , .(MySum = sum(v))]` era lo que se pretendía, o `DT[ , j = .(MySum = sum(v))]`.
-\"`translateCharUTF8` must be called on a `CHARSXP`\" [\"`translateCharUTF8` debe ser llamado en un `CHARSXP`\"]
-Este error (y otros similares, _p. ej._, \"`getCharCE` debe ser llamado en un `CHARSXP`\") puede no tener nada que ver con los datos de caracteres o la configuración regional. En cambio, puede ser un síntoma de una corrupción de memoria anterior. Hasta la fecha, estos errores se han podido reproducir y solucionar (rápidamente). Por favor, repórtelo a nuestro [rastreador de problemas]{1}.
-`cbind(DT, DF)` devuelve un formato extraño, _p. ej._ `Integer,5` {#cbinderror}
-Esto ocurre antes de la v1.6.5, también para `rbind(DT, DF)`. Actualice a la v1.6.7 o posterior.
-\"cannot change value of locked binding for `.SD`\" [\"no se puede cambiar el valor del enlace bloqueado para `.SD`\"]
-`.SD` está bloqueado por diseño. Consulte `?data.table`. Si desea manipular `.SD` antes de usarlo o devolverlo y no desea modificar `DT` utilizando `:=`, primero haga una copia (consulte `?copy`), _p. ej._,
-\"cannot change value of locked binding for `.N`\" [\"no se puede cambiar el valor del enlace bloqueado para `.N`\"]
-Actualice a v1.8.1 o posterior. A partir de esta versión, si `.N` es devuelto por `j`, se le cambia el nombre a `N` para evitar cualquier ambigüedad en cualquier agrupación posterior entre la variable especial `.N` y una columna llamada `\".N\"`.
-El comportamiento anterior se puede reproducir forzando a `.N` a llamarse `.N`, de esta manera:
-Si ya está ejecutando v1.8.1 o posterior, el mensaje de error ahora es más útil que el error \"no se puede cambiar el valor del enlace bloqueado\", como puede ver arriba, ya que esta viñeta se generó utilizando v1.8.1 o posterior.
-La sintaxis más natural ahora funciona:
-Mensajes de advertencia
-\"The following object(s) are masked from `package:base`: `cbind`, `rbind`\" [\"Los siguientes objetos están enmascarados de `package:base`: `cbind`, `rbind`\"]
-Esta advertencia estaba presente solo en v1.6.5 y v.1.6.6, al cargar el paquete. La motivación era permitir que `cbind(DT, DF)` funcionara, pero como se vio, esto rompió la compatibilidad (total) con el paquete `IRanges`. Actualice a v1.6.7 o posterior.
-\"Coerced numeric RHS to integer to match the column's type\" [\"Conversión forzada del RHS numérico a entero para que coincida con el tipo de la columna\"]
-Espero que esto se explique por sí solo. El mensaje completo es:
-Conversión forzada del RHS numérico a entero para que coincida con el tipo de la columna; puede tener precisión truncada. Cambie la columna a numérica primero creando usted mismo un nuevo vector numérico de longitud 5 (nfilas de la tabla completa) y asígnelo (es decir, "reemplazar" la columna), o convierta usted mismo el RHS a entero (por ejemplo, 1L o as.integer) para dejar clara su intención (y para mayor velocidad). O bien, configure el tipo de columna correctamente desde el principio cuando cree la tabla y manténgalo, por favor.
-Para generarlo, intente:
-Lectura de data.table desde un archivo RDS o RData
-`*.RDS` y `*.RData` son tipos de archivo que pueden almacenar objetos R en memoria en el disco de manera eficiente. Sin embargo, almacenar data.table en el archivo binario pierde su sobreasignación de columnas. Esto no es un gran problema: su data.table se copiará en la memoria en la siguiente operación _por referencia_ y arrojará una advertencia. Por lo tanto, se recomienda llamar a `setalloccol()` en cada data.table cargado con llamadas `readRDS()` o `load()`.
-Preguntas generales sobre el paquete
-¿Parece que la v1.3 no está en el archivo CRAN?
-Eso es correcto. La v1.3 solo estaba disponible en R-Forge. Hubo varios cambios importantes internamente y llevó algún tiempo probarlos en el desarrollo.
-¿Es data.table compatible con S-plus?
-Actualmente no.
-===== - Algunas partes principales del paquete están escritas en C y usan funciones y estructuras R internas.===== ===== - El paquete usa ámbito léxico, que es una de las diferencias entre R y **S-plus** explicado en [R FAQ 3.3.1]{1}=====
-¿Está disponible para Linux, Mac y Windows?
-Sí, tanto para 32 bits como para 64 bits en todas las plataformas. Gracias a CRAN. No se utilizan bibliotecas especiales o específicas del sistema operativo.
-Creo que es esto genial. ¿Qué puedo hacer?
-Envíe sugerencias, informes de errores y solicitudes de mejora en nuestro [seguimiento de problemas]{1}. Esto ayuda a mejorar el paquete.
-Marque el paquete con una estrella en [GitHub]{1}. Esto ayuda a alentar a los desarrolladores y ayuda a otros usuarios de R a encontrar el paquete.
-Puede enviar solicitudes de incorporación de cambios para cambiar el código o la documentación usted mismo; consulte nuestras [Pautas de contribución]{1}.
-Creo que esto no es genial. ¿Cómo advierto a otros sobre mi experiencia?
-Agregamos todos los artículos que conocemos (ya sean positivos o negativos) a la página [Artículos]{1}. Todas las páginas del wiki del proyecto en GitHub son de acceso abierto sin restricciones de modificación. No dude en escribir un artículo, vincular a uno negativo que haya escrito otra persona y que haya encontrado, o agregar una nueva página a nuestro wiki para recopilar sus críticas. Haga que sea constructivo para que tengamos la oportunidad de mejorar.
-Tengo una pregunta. Sé que la guía de publicación de r-help me dice que me comunique con el mantenedor (no con r-help), pero ¿hay un grupo más grande de personas a las que pueda preguntar?
-Consulte la [guía de soporte]{1} en la página de inicio del proyecto, que contiene enlaces actualizados.
-¿Dónde están los archivos de datatable-help?
-La [página de inicio]{1} contiene enlaces a los archivos en varios formatos.
-Preferiría no publicar en la página de Problemas, ¿puedo enviar un correo electrónico privado a una o dos personas?
-Por supuesto. Sin embargo, es más probable que obtengas una respuesta más rápida en la página de Problemas o en Stack Overflow. Además, preguntar públicamente en esos lugares ayuda a construir la base de conocimiento general.
-He creado un paquete que utiliza data.table. ¿Cómo puedo asegurarme de que mi paquete sea compatible con data.table para que funcione la herencia de `data.frame`?
-Por favor, consulte [esta respuesta]{1}.
+
+
+The first section, Beginner FAQs, is intended to be read in order, from start to finish. It's just written in a FAQ style to be digested more easily. It isn't really the most frequently asked questions. A better measure for that is looking on Stack Overflow.
+
+This FAQ is required reading and considered core documentation. Please do not ask questions on Stack Overflow or raise issues on GitHub until you have read it. We can all tell when you ask that you haven't read it. So if you do ask and haven't read it, don't use your real name.
+
+This document has been quickly revised given the changes in v1.9.8 released Nov 2016. Please do submit pull requests to fix mistakes or improvements. If anyone knows why the table of contents comes out so narrow and squashed when displayed by CRAN, please let us know. This document used to be a PDF and we changed it recently to HTML.
+
+Beginner FAQs
+
+Why do `DT[ , 5]` and `DT[2, 5]` return a 1-column data.table rather than vectors like `data.frame`? {#j-num}
+
+For consistency so that when you use data.table in functions that accept varying inputs, you can rely on `DT[...]` returning a data.table. You don't have to remember to include `drop=FALSE` like you do in data.frame. data.table was first released in 2006 and this difference to data.frame has been a feature since the very beginning.
+
+You may have heard that it is generally bad practice to refer to columns by number rather than name, though. If your colleague comes along and reads your code later they may have to hunt around to find out which column is number 5. If you or they change the column ordering higher up in your R program, you may produce wrong results with no warning or error if you forget to change all the places in your code which refer to column number 5. That is your fault not R's or data.table's. It's really really bad. Please don't do it. It's the same mantra as professional SQL developers have: never use `select *`, always explicitly select by column name to at least try to be robust to future changes.
+
+Say column 5 is named `\"region\"` and you really must extract that column as a vector not a data.table. It is more robust to use the column name and write `DT$region` or `DT[[\"region\"]]`; i.e., the same as base R. Using base R's `$` and `[[` on data.table is encouraged. Not when combined with `<-` to assign (use `:=` instead for that) but just to select a single column by name they are encouraged.
+
+There are some circumstances where referring to a column by number seems like the only way, such as a sequence of columns. In these situations just like data.frame, you can write `DT[, 5:10]` and `DT[,c(1,4,10)]`. However, again, it is more robust (to future changes in your data's number of and ordering of columns) to use a named range such as `DT[,columnRed:columnViolet]` or name each one `DT[,c(\"columnRed\",\"columnOrange\",\"columnYellow\")]`. It is harder work up front, but you will probably thank yourself and your colleagues might thank you in the future. At least you can say you tried your best to write robust code if something does go wrong.
+
+However, what we really want you to do is `DT[,.(columnRed,columnOrange,columnYellow)]`; i.e., use column names as if they are variables directly inside `DT[...]`. You don't have to prefix each column with `DT$` like you do in data.frame. The `.()` part is just an alias for `list()` and you can use `list()` instead if you prefer. You can place any R expression of column names, using any R package, returning different types of different lengths, right there. We wanted to encourage you to do that so strongly in the past that we deliberately didn't make `DT[,5]` work at all. Before v1.9.8 released Nov 2016, `DT[,5]` used to just return `5`. The thinking was that we could more simply teach one fact that the parts inside `DT[...]` get evaluated within the frame of DT always (they see column names as if they are variables). And `5` evaluates to `5` so that behaviour was consistent with the single rule. We asked you to go through an extra deliberate hurdle `DT[,5,with=FALSE]` if you really wanted to select a column by name or number. Going forward from Nov 2016, you don't need to use `with=FALSE` and we'll see how greater consistency with data.frame in this regard will help or hinder both new and long-time users. The new users who don't read this FAQ, not even this very first entry, will hopefully not stumble as soon with data.table as they did before if they had expected it to work like data.frame. Hopefully they will not miss out on understanding our intent and recommendation to place expressions of columns inside `DT[i, j, by]`. If they use data.table like data.frame they won't gain any benefits. If you know anyone like that, please give them a friendly nudge to read this document like you are.
+
+Reminder: you can place _any_ R expression inside `DT[...]` using column names as if they are variables; e.g., try `DT[, colA*colB/2]`. That does return a vector because you used column names as if they are variables. Wrap with `.()` to return a data.table; i.e. `DT[,.(colA*colB/2)]`. Name it: `DT[,.(myResult = colA*colB/2)]`. And we'll leave it to you to guess how to return two things from this query. It's also quite common to do a bunch of things inside an anonymous body: `DT[, { x<-colA+10; x*x/2 }]` or call another package's function: `DT[ , fitdistr(columnA, \"normal\")]`.
+
+Why does `DT[,\"region\"]` return a 1-column data.table rather than a vector?
+
+See the [answer above]{1}. Try `DT$region` instead. Or `DT[[\"region\"]]`.
+
+Why does `DT[, region]` return a vector for the \"region\" column? I'd like a 1-column data.table.
+
+Try `DT[ , .(region)]` instead. `.()` is an alias for `list()` and ensures a data.table is returned.
+
+Also continue reading and see the FAQ after next. Skim whole documents before getting stuck in one part.
+
+Why does `DT[ , x, y, z]` not work? I wanted the 3 columns `x`,`y` and `z`.
+
+The `j` expression is the 2nd argument. Try `DT[ , c(\"x\",\"y\",\"z\")]` or `DT[ , .(x,y,z)]`.
+
+I assigned a variable `mycol=\"x\"` but then `DT[, mycol]` returns an error. How do I get it to look up the column name contained in the `mycol` variable?
+
+The error is that column named `\"mycol\"` cannot be found, and this error is correct. `data.table`'s scoping is different to `data.frame` in that you can use column names as if they are variables directly inside `DT[...]` without prefixing each column name with `DT$`; see FAQ 1.1 above.
+
+To use `mycol` to select the column `x` from `DT`, there are a few options:
+
+See `?data.table` for more details about the `..` prefix.
+
+The `with` argument takes its name from the `base` function `with()`. When `with=TRUE` (default), `data.table` operates similar to `with()`, i.e. `DT[, mycol]` behaves like `with(DT, mycol)`. When `with=FALSE`, the standard `data.frame` evaluation rules apply to all variables in `j` and you can no longer use column names directly.
+
+What are the benefits of being able to use column names as if they are variables inside `DT[...]`?
+
+`j` doesn't have to be just column names. You can write any R _expression_ of column names directly in `j`, _e.g._, `DT[ , mean(x*y/z)]`. The same applies to `i`, _e.g._, `DT[x>1000, sum(y*z)]`.
+
+This runs the `j` expression on the set of rows where the `i` expression is true. You don't even need to return data, _e.g._, `DT[x>1000, plot(y, z)]`. You can do `j` by group simply by adding `by = `; e.g., `DT[x>1000, sum(y*z), by = w]`. This runs `j` for each group in column `w` but just over the rows where `x>1000`. By placing the 3 parts of the query (i=where, j=select and by=group by) inside the square brackets, data.table sees this query as a whole before any part of it is evaluated. Thus it can optimize the combined query for performance. It can do this because the R language uniquely has lazy evaluation (Python and Julia do not). data.table sees the expressions inside `DT[...]` before they are evaluated and optimizes them before evaluation. For example, if data.table see that you're only using 2 columns out of 100, it won't bother to subset the 98 that aren't needed by your j expression.
+
+OK, I'm starting to see what data.table is about, but why didn't you just enhance `data.frame` in R? Why does it have to be a new package?
+
+As [highlighted above]{1}, `j` in `[.data.table` is fundamentally different from `j` in `[.data.frame`. Even if something as simple as `DF[ , 1]` was changed in base R to return a data.frame rather than a vector, that would break existing code in many 1000's of CRAN packages and user code. As soon as we took the step to create a new class that inherited from data.frame, we had the opportunity to change a few things and we did. We want data.table to be slightly different and to work this way for more complicated syntax to work. There are other differences, too (see [below]{2} ).
+
+Furthermore, data.table _inherits_ from `data.frame`. It _is_ a `data.frame`, too. A data.table can be passed to any package that only accepts `data.frame` and that package can use `[.data.frame` syntax on the data.table. See [this answer]{1} for how that is achieved.
+
+We _have_ proposed enhancements to R wherever possible, too. One of these was accepted as a new feature in R 2.12.0:
+
+`unique()` and `match()` are now faster on character vectors where all elements are in the global CHARSXP cache and have unmarked encoding (ASCII). Thanks to Matt Dowle for suggesting improvements to the way the hash code is generated in unique.c.
+
+A second proposal was to use `memcpy` in duplicate.c, which is much faster than a for loop in C. This would improve the _way_ that R copies data internally (on some measures by 13 times). The thread on r-devel is [here]{1}.
+
+A third more significant proposal that was accepted is that R now uses data.table's radix sort code as from R 3.3.0:
+
+The radix sort algorithm and implementation from data.table (forder) replaces the previous radix (counting) sort and adds a new method for order(). Contributed by Matt Dowle and Arun Srinivasan, the new algorithm supports logical, integer (even with large values), real, and character vectors. It outperforms all other methods, but there are some caveats (see ?sort).
+
+This was big event for us and we celebrated until the cows came home. (Not really.)
+
+Why are the defaults the way they are? Why does it work the way it does?
+
+The simple answer is because the main author originally designed it for his own use. He wanted it that way. He finds it a more natural, faster way to write code, which also executes more quickly.
+
+Isn't this already done by `with()` and `subset()` in `base`?
+
+Some of the features discussed so far are, yes. The package builds upon base functionality. It does the same sorts of things but with less code required and executes many times faster if used correctly.
+
+Why does `X[Y]` return all the columns from `Y` too? Shouldn't it return a subset of `X`?
+
+This was changed in v1.5.3 (Feb 2011). Since then `X[Y]` includes `Y`'s non-join columns. We refer to this feature as _join inherited scope_ because not only are `X` columns available to the `j` expression, so are `Y` columns. The downside is that `X[Y]` is less efficient since every item of `Y`'s non-join columns are duplicated to match the (likely large) number of rows in `X` that match. We therefore strongly encourage `X[Y, j]` instead of `X[Y]`. See [next FAQ]{1}.
+
+What is the difference between `X[Y]` and `merge(X, Y)`? {#MergeDiff}
+
+`X[Y]` is a join, looking up `X`'s rows using `Y` (or `Y`'s key if it has one) as an index.
+
+`Y[X]` is a join, looking up `Y`'s rows using `X` (or `X`'s key if it has one) as an index.
+
+`merge(X,Y)`[^1] does both ways at the same time. The number of rows of `X[Y]` and `Y[X]` usually differ, whereas the number of rows returned by `merge(X, Y)` and `merge(Y, X)` is the same.
+
+_BUT_ that misses the main point. Most tasks require something to be done on the data after a join or merge. Why merge all the columns of data, only to use a small subset of them afterwards? You may suggest `merge(X[ , ColsNeeded1], Y[ , ColsNeeded2])`, but that requires the programmer to work out which columns are needed. `X[Y, j]` in data.table does all that in one step for you. When you write `X[Y, sum(foo*bar)]`, data.table automatically inspects the `j` expression to see which columns it uses. It will subset those columns only; the others are ignored. Memory is only created for the columns `j` uses and `Y` columns enjoy standard R recycling rules within the context of each group. Let's say `foo` is in `X` and `bar` is in `Y` (along with 20 other columns in `Y`). Isn't `X[Y, sum(foo*bar)]` quicker to program and quicker to run than a `merge` of everything wastefully followed by a `subset`?
+
+[^1]: Here we mean either the `merge` _method_ for data.table or the `merge` method for `data.frame` since both methods work in the same way in this respect. See `?merge.data.table` and [below]{1} for more information about method dispatch.
+
+Anything else about `X[Y, sum(foo*bar)]`?
+
+This behaviour changed in v1.9.4 (Sep 2014). It now does the `X[Y]` join and then runs `sum(foo*bar)` over all the rows; i.e., `X[Y][ , sum(foo*bar)]`. It used to run `j` for each _group_ of `X` that each row of `Y` matches to. That can still be done as it's very useful but you now need to be explicit and specify `by = .EACHI`, _i.e._, `X[Y, sum(foo*bar), by = .EACHI]`. We call this _grouping by each `i`_.
+
+For example, (further complicating it by using _join inherited scope_, too):
+
+That's nice. How did you manage to change it given that users depended on the old behaviour?
+
+The request to change came from users. The feeling was that if a query is doing grouping then an explicit `by=` should be present for code readability reasons. An option was provided to return the old behaviour: `options(datatable.old.bywithoutby)`, by default `FALSE`. This enabled upgrading to test the other new features / bug fixes in v1.9.4, with later migration of any by-without-by queries when ready by adding `by=.EACHI` to them. We retained 47 pre-change tests and added them back as new tests, tested under `options(datatable.old.bywithoutby=TRUE)`. We added a startup message about the change and how to revert to the old behaviour. After 1 year the option was deprecated with warning when used. After 2 years the option to revert to old behaviour was removed.
+
+Of the 66 packages on CRAN or Bioconductor that depended on or import data.table at the time of releasing v1.9.4 (it is now over 300), only one was affected by the change. That could be because many packages don't have comprehensive tests, or just that grouping by each row in `i` wasn't being used much by downstream packages. We always test the new version with all dependent packages before release and coordinate any changes with those maintainers. So this release was quite straightforward in that regard.
+
+Another compelling reason to make the change was that previously, there was no efficient way to achieve what `X[Y, sum(foo*bar)]` does now. You had to write `X[Y][ , sum(foo*bar)]`. That was suboptimal because `X[Y]` joined all the columns and passed them all to the second compound query without knowing that only `foo` and `bar` are needed. To solve that efficiency problem, extra programming effort was required: `X[Y, list(foo, bar)][ , sum(foo*bar)]`. The change to `by = .EACHI` has simplified this by allowing both queries to be expressed inside a single `DT[...]` query for efficiency.
+
+General Syntax
+
+How can I avoid writing a really long `j` expression? You've said that I should use the column _names_, but I've got a lot of columns.
+
+When grouping, the `j` expression can use column names as variables, as you know, but it can also use a reserved symbol `.SD` which refers to the **S**ubset of the **D**ata.table for each group (excluding the grouping columns). So to sum up all your columns it's just `DT[ , lapply(.SD, sum), by = grp]`. It might seem tricky, but it's fast to write and fast to run. Notice you don't have to create an anonymous function. The `.SD` object is efficiently implemented internally and more efficient than passing an argument to a function. But if the `.SD` symbol appears in `j` then data.table has to populate `.SD` fully for each group even if `j` doesn't use all of it.
+
+So please don't do, for example, `DT[ , sum(.SD[[\"sales\"]]), by = grp]`. That works but is inefficient and inelegant. `DT[ , sum(sales), by = grp]` is what was intended, and it could be 100s of times faster. If you use _all_ of the data in `.SD` for each group (such as in `DT[ , lapply(.SD, sum), by = grp]`) then that's very good usage of `.SD`. If you're using _several_ but not _all_ of the columns, you can combine `.SD` with `.SDcols`; see `?data.table`.
+
+Why is the default for `mult` now `\"all\"`?
+
+In v1.5.3 the default was changed to `\"all\"`. When `i` (or `i`'s key if it has one) has fewer columns than `x`'s key, `mult` was already set to `\"all\"` automatically. Changing the default makes this clearer and easier for users as it came up quite often.
+
+In versions up to v1.3, `\"all\"` was slower. Internally, `\"all\"` was implemented by joining using `\"first\"`, then again from scratch using `\"last\"`, after which a diff between them was performed to work out the span of the matches in `x` for each row in `i`. Most often we join to single rows, though, where `\"first\"`,`\"last\"` and `\"all\"` return the same result. We preferred maximum performance for the majority of situations so the default chosen was `\"first\"`. When working with a non-unique key (generally a single column containing a grouping variable), `DT[\"A\"]` returned the first row of that group so `DT[\"A\", mult = \"all\"]` was needed to return all the rows in that group.
+
+In v1.4 the binary search in C was changed to branch at the deepest level to find first and last. That branch will likely occur within the same final pages of RAM so there should no longer be a speed disadvantage in defaulting `mult` to `\"all\"`. We warned that the default might change and made the change in v1.5.3.
+
+A future version of data.table may allow a distinction between a key and a _unique key_. Internally `mult = \"all\"` would perform more like `mult = \"first\"` when all `x`'s key columns were joined to and `x`'s key was a unique key. data.table would need checks on insert and update to make sure a unique key is maintained. An advantage of specifying a unique key would be that data.table would ensure no duplicates could be inserted, in addition to performance.
+
+I'm using `c()` in `j` and getting strange results.
+
+This is a common source of confusion. In `data.frame` you are used to, for example:
+
+which returns the two columns. In data.table you know you can use the column names directly and might try:
+
+but this returns one vector. Remember that the `j` expression is evaluated within the environment of `DT` and `c()` returns a vector. If 2 or more columns are required, use `list()` or `.()` instead:
+
+`c()` can be useful in a data.table too, but its behaviour is different from that in `[.data.frame`.
+
+I have built up a complex table with many columns. I want to use it as a template for a new table; _i.e._, create a new table with no rows, but with the column names and types copied from my table. Can I do that easily?
+
+Yes. If your complex table is called `DT`, try `NEWDT = DT[0]`.
+
+Is a null data.table the same as `DT[0]`?
+
+No. By \"null data.table\" we mean the result of `data.table(NULL)` or `as.data.table(NULL)`; _i.e._,
+
+The null data.table|`frame` is `NULL` with some attributes attached, which means it's no longer `NULL`. In R only pure `NULL` is `NULL` as tested by `is.null()`. When referring to the \"null data.table\" we use lower case null to help distinguish from upper case `NULL`. To test for the null data.table, use `length(DT) == 0` or `ncol(DT) == 0` (`length` is slightly faster as it's a primitive function).
+
+An _empty_ data.table (`DT[0]`) has one or more columns, all of which are empty. Those empty columns still have names and types.
+
+Why has the `DT()` alias been removed? {#DTremove1}
+
+`DT` was introduced originally as a wrapper for a list of `j `expressions. Since `DT` was an alias for data.table, this was a convenient way to take care of silent recycling in cases where each item of the `j` list evaluated to different lengths. The alias was one reason grouping was slow, though.
+
+As of v1.3, `list()` or `.()` should be passed instead to the `j` argument. These are much faster, especially when there are many groups. Internally, this was a non-trivial change. Vector recycling is now done internally, along with several other speed enhancements for grouping.
+
+But my code uses `j = DT(...)` and it works. The previous FAQ says that `DT()` has been removed. {#DTremove2}
+
+Then you are using a version prior to 1.5.3. Prior to 1.5.3 `[.data.table` detected use of `DT()` in the `j` and automatically replaced it with a call to `list()`. This was to help the transition for existing users.
+
+What are the scoping rules for `j` expressions?
+
+Think of the subset as an environment where all the column names are variables. When a variable `foo` is used in the `j` of a query such as `X[Y, sum(foo)]`, `foo` is looked for in the following order:
+
+===== 1. The scope of `X`'s subset; _i.e._, `X`'s column names.===== ===== 2. The scope of each row of `Y`; _i.e._, `Y`'s column names (_join inherited scope_)===== ===== 3. The scope of the calling frame; _e.g._, the line that appears before the data.table query.===== ===== 4. Exercise for reader: does it then ripple up the calling frames, or go straight to `globalenv()`?===== ===== 5. The global environment=====
+
+This is _lexical scoping_ as explained in [R FAQ 3.3.1]{1}. The environment in which the function was created is not relevant, though, because there is _no function_. No anonymous _function_ is passed to `j`. Instead, an anonymous _body_ is passed to `j`; for example,
+
+Some programming languages call this a _lambda_.
+
+Can I trace the `j` expression as it runs through the groups? {#j-trace}
+
+Try something like this:
+
+Inside each group, why are the group variables length-1?
+
+[Above]{1}, `x` is a grouping variable and (as from v1.6.1) has `length` 1 (if inspected or used in `j`). It's for efficiency and convenience. Therefore, there is no difference between the following two statements:
+
+If you need the size of the current group, use `.N` rather than calling `length()` on any column.
+
+Only the first 10 rows are printed, how do I print more?
+
+There are two things happening here. First, if the number of rows in a data.table are large (`> 100` by default), then a summary of the data.table is printed to the console by default. Second, the summary of a large data.table is printed by taking the top and bottom `n` (`= 5` by default) rows of the data.table and only printing those. Both of these parameters (when to trigger a summary and how much of a table to use as a summary) are configurable by R's `options` mechanism, or by calling the `print` function directly.
+
+For instance, to enforce the summary of a data.table to only happen when a data.table is greater than 50 rows, you could `options(datatable.print.nrows = 50)`. To disable the summary-by-default completely, you could `options(datatable.print.nrows = Inf)`. You could also call `print` directly, as in `print(your.data.table, nrows = Inf)`.
+
+If you want to show more than just the top (and bottom) 10 rows of a data.table summary (say you like 20), set `options(datatable.print.topn = 20)`, for example. Again, you could also just call `print` directly, as in `print(your.data.table, topn = 20)`.
+
+With an `X[Y]` join, what if `X` contains a column called `\"Y\"`?
+
+When `i` is a single name such as `Y` it is evaluated in the calling frame. In all other cases such as calls to `.()` or other expressions, `i` is evaluated within the scope of `X`. This facilitates easy _self-joins_ such as `X[J(unique(colA)), mult = \"first\"]`.
+
+`X[Z[Y]]` is failing because `X` contains a column `\"Y\"`. I'd like it to use the table `Y` in calling scope.
+
+The `Z[Y]` part is not a single name so that is evaluated within the frame of `X` and the problem occurs. Try `tmp = Z[Y]; X[tmp]`. This is robust to `X` containing a column `\"tmp\"` because `tmp` is a single name. If you often encounter conflicts of this type, one simple solution may be to name all tables in uppercase and all column names in lowercase, or some similar scheme.
+
+Can you explain further why data.table is inspired by `A[B]` syntax in `base`?
+
+Consider `A[B]` syntax using an example matrix `A`:
+
+To obtain cells `(1, 2) = 5` and `(3, 3) = 11` many users (we believe) may try this first:
+
+However, this returns the union of those rows and columns. To reference the cells, a 2-column matrix is required. `?Extract` says:
+
+When indexing arrays by `[` a single argument `i` can be a matrix with as many columns as there are dimensions of `x`; the result is then a vector with elements corresponding to the sets of indices in each row of `i`.
+
+Let's try again.
+
+A matrix is a 2-dimensional structure with row names and column names. Can we do the same with names?
+
+So yes, we can. Can we do the same with a `data.frame`?
+
+But, notice that the result was coerced to `character.` R coerced `A` to `matrix` first so that the syntax could work, but the result isn't ideal. Let's try making `B` a `data.frame`.
+
+So we can't subset a `data.frame` by a `data.frame` in base R. What if we want row names and column names that aren't `character` but `integer` or `float`? What if we want more than 2 dimensions of mixed types? Enter data.table.
+
+Furthermore, matrices, especially sparse matrices, are often stored in a 3-column tuple: `(i, j, value)`. This can be thought of as a key-value pair where `i` and `j` form a 2-column key. If we have more than one value, perhaps of different types, it might look like `(i, j, val1, val2, val3, ...)`. This looks very much like a `data.frame`. Hence data.table extends `data.frame` so that a `data.frame` `X` can be subset by a `data.frame` `Y`, leading to the `X[Y]` syntax.
+
+Can base be changed to do this then, rather than a new package?
+
+`data.frame` is used _everywhere_ and so it is very difficult to make _any_ changes to it. data.table _inherits_ from `data.frame`. It _is_ a `data.frame`, too. A data.table _can_ be passed to any package that _only_ accepts `data.frame`. When that package uses `[.data.frame` syntax on the data.table, it works. It works because `[.data.table` looks to see where it was called from. If it was called from such a package, `[.data.table` diverts to `[.data.frame`.
+
+I've heard that data.table syntax is analogous to SQL.
+
+Yes:
+
+===== - `i` $$$\\Leftrightarrow$$$ where===== ===== - `j` $$$\\Leftrightarrow$$$ select===== ===== - `:=` $$$\\Leftrightarrow$$$ update===== ===== - `by` $$$\\Leftrightarrow$$$ group by===== ===== - `i` $$$\\Leftrightarrow$$$ order by (in compound syntax)===== ===== - `i` $$$\\Leftrightarrow$$$ having (in compound syntax)===== ===== - `nomatch = NA` $$$\\Leftrightarrow$$$ outer join===== ===== - `nomatch = NULL` $$$\\Leftrightarrow$$$ inner join===== ===== - `mult = \"first\"|\"last\"` $$$\\Leftrightarrow$$$ N/A because SQL is inherently unordered===== ===== - `roll = TRUE` $$$\\Leftrightarrow$$$ N/A because SQL is inherently unordered=====
+
+The general form is:
+
+A key advantage of column vectors in R is that they are _ordered_, unlike SQL[^2]. We can use ordered functions in `data.table` queries such as `diff()` and we can use _any_ R function from any package, not just the functions that are defined in SQL. A disadvantage is that R objects must fit in memory, but with several R packages such as `ff`, `bigmemory`, `mmap` and `indexing`, this is changing.
+
+[^2]: It may be a surprise to learn that `select top 10 * from ...` does _not_ reliably return the same rows over time in SQL. You do need to include an `order by` clause, or use a clustered index to guarantee row order; _i.e._, SQL is inherently unordered.
+
+What are the smaller syntax differences between `data.frame` and data.table {#SmallerDiffs}
+
+===== - `DT[3]` refers to the 3rd _row_, but `DF[3]` refers to the 3rd _column_===== ===== - `DT[3, ] == DT[3]`, but `DF[ , 3] == DF[3]` (somewhat confusingly in data.frame, whereas data.table is consistent)===== ===== - For this reason we say the comma is _optional_ in `DT`, but not optional in `DF`===== ===== - `DT[[3]] == DF[, 3] == DF[[3]]`===== ===== - `DT[i, ]`, where `i` is a single integer, returns a single row, just like `DF[i, ]`, but unlike a matrix single-row subset which returns a vector.===== ===== - `DT[ , j]` where `j` is a single integer returns a one-column data.table, unlike `DF[, j]` which returns a vector by default===== ===== - `DT[ , \"colA\"][[1]] == DF[ , \"colA\"]`.===== ===== - `DT[ , colA] == DF[ , \"colA\"]` (currently in data.table v1.9.8 but is about to change, see release notes)===== ===== - `DT[ , list(colA)] == DF[ , \"colA\", drop = FALSE]`===== ===== - `DT[NA]` returns 1 row of `NA`, but `DF[NA]` returns an entire copy of `DF` containing `NA` throughout. The symbol `NA` is type `logical` in R and is therefore recycled by `[.data.frame`. The user's intention was probably `DF[NA_integer_]`. `[.data.table` diverts to this probable intention automatically, for convenience.===== ===== - `DT[c(TRUE, NA, FALSE)]` treats the `NA` as `FALSE`, but `DF[c(TRUE, NA, FALSE)]` returns===== `NA` rows for each `NA` ===== - `DT[ColA == ColB]` is simpler than `DF[!is.na(ColA) & !is.na(ColB) & ColA == ColB, ]`===== ===== - `data.frame(list(1:2, \"k\", 1:4))` creates 3 columns, data.table creates one `list` column.===== ===== - `check.names` is by default `TRUE` in `data.frame` but `FALSE` in data.table, for convenience.===== ===== - `data.table` has always set `stringsAsFactors=FALSE` by default. In R 4.0.0 (Apr 2020), `data.frame`'s default was changed from `TRUE` to `FALSE` and there is no longer a difference in this regard; see [stringsAsFactors, Kurt Hornik, Feb 2020]{1}.===== ===== - Atomic vectors in `list` columns are collapsed when printed using `\", \"` in `data.frame`, but `\",\"` in data.table with a trailing comma after the 6th item to avoid accidental printing of large embedded objects.===== ===== - Unlike data.frames a data.table cannot store rows with no columns, as rows are considered to be the children of columns: `nrow(DF[, 0])` returns the number of rows, while `nrow(DT[, 0])` always returns 0; but see issue [#2422]{2}.=====
+
+In `[.data.frame` we very often set `drop = FALSE`. When we forget, bugs can arise in edge cases where single columns are selected and all of a sudden a vector is returned rather than a single column `data.frame`. In `[.data.table` we took the opportunity to make it consistent and dropped `drop`.
+
+When a data.table is passed to a data.table-unaware package, that package is not concerned with any of these differences; it just works.
+
+I'm using `j` for its side effect only, but I'm still getting data returned. How do I stop that?
+
+In this case `j` can be wrapped with `invisible()`; e.g., `DT[ , invisible(hist(colB)), by = colA]`[^3]
+
+[^3]: _e.g._, `hist()` returns the breakpoints in addition to plotting to the graphics device.
+
+Why does `[.data.table` now have a `drop` argument from v1.5?
+
+So that data.table can inherit from `data.frame` without using `...`. If we used `...` then invalid argument names would not be caught.
+
+The `drop` argument is never used by `[.data.table`. It is a placeholder for non-data.table-aware packages when they use the `[.data.frame` syntax directly on a data.table.
+
+Rolling joins are cool and very fast! Was that hard to program?
+
+The prevailing row on or before the `i` row is the final row the binary search tests anyway. So `roll = TRUE` is essentially just a switch in the binary search C code to return that row.
+
+Why does `DT[i, col := value]` return the whole of `DT`? I expected either no visible value (consistent with `<-`), or a message or return value containing how many rows were updated. It isn't obvious that the data has indeed been updated by reference.
+
+This has changed in v1.8.3 to meet your expectations. Please upgrade.
+
+The whole of `DT` is returned (now invisibly) so that compound syntax can work; _e.g._, `DT[i, done := TRUE][ , sum(done)]`. The number of rows updated is returned when `verbose` is `TRUE`, either on a per-query basis or globally using `options(datatable.verbose = TRUE)`.
+
+OK, thanks. What was so difficult about the result of `DT[i, col := value]` being returned invisibly?
+
+R internally forces visibility on for `[`. The value of FunTab's eval column (see [src/main/names.c]{1}) for `[` is `0` meaning \"force `R_Visible` on\" (see [R-Internals section 1.6]{2} ). Therefore, when we tried `invisible()` or setting `R_Visible` to `0` directly ourselves, `eval` in [src/main/eval.c]{3} would force it on again.
+
+To solve this problem, the key was to stop trying to stop the print method running after a `:=`. Instead, inside `:=` we now (from v1.8.3) set a global flag which the print method uses to know whether to actually print or not.
+
+Why do I have to type `DT` sometimes twice after using `:=` to print the result to console?
+
+This is an unfortunate downside to get [#869]{1} to work. If a `:=` is used inside a function with no `DT[]` before the end of the function, then the next time `DT` is typed at the prompt, nothing will be printed. A repeated `DT` will print. To avoid this: include a `DT[]` after the last `:=` in your function. If that is not possible (e.g., it's not a function you can change) then `print(DT)` and `DT[]` at the prompt are guaranteed to print. As before, adding an extra `[]` on the end of `:=` query is a recommended idiom to update and then print; e.g.> `DT[,foo:=3L][]`.
+
+I've noticed that `base::cbind.data.frame` (and `base::rbind.data.frame`) appear to be changed by data.table. How is this possible? Why?
+
+It was a temporary, last resort solution before rbind and cbind S3 method dispatch was fixed in R >= 4.0.0. Essentially, the issue was that `data.table` inherits from `data.frame`, _and_ `base::cbind` and `base::rbind` (uniquely) do their own S3 dispatch internally as documented by `?cbind`. The `data.table` workaround was adding one `for` loop to the start of each function directly in `base`. That modification was made dynamically, _i.e._, the `base` definition of `cbind.data.frame` was fetched, the `for` loop added to the beginning, and then assigned back to `base`. This solution was designed to be robust to different definitions of `base::cbind.data.frame` in different versions of R, including unknown future changes. It worked well. The competing requirements were:
+
+===== - `cbind(DT, DF)` needs to work. Defining `cbind.data.table` didn't work because `base::cbind` does its own S3 dispatch and required (before R 4.0.0) that the _first_ `cbind` method for each object it is passed is _identical_. This is not true in `cbind(DT, DF)` because the first method for `DT` is `cbind.data.table` but the first method for `DF` is `cbind.data.frame`. `base::cbind` then fell through to its internal `bind` code which appears to treat `DT` as a regular `list` and returns very odd looking and unusable `matrix` output. See [below]{1}. We cannot just advise users not to call `cbind(DT, DF)` because packages such as `ggplot2` make such a call ([test 167.2]{2}).=====
+
+===== - This naturally led to trying to mask `cbind.data.frame` instead. Since a data.table is a `data.frame`, `cbind` would find the same method for both `DT` and `DF`. However, this didn't work either because `base::cbind` appears to find methods in `base` first; _i.e._, `base::cbind.data.frame` isn't maskable.=====
+
+===== - Finally, we tried masking `cbind` itself (v1.6.5 and v1.6.6). This allowed `cbind(DT, DF)` to work, but introduced compatibility issues with package `IRanges`, since `IRanges` also masks `cbind`. It worked if `IRanges` was lower on the `search()` path than data.table, but if `IRanges` was higher then data.table's, `cbind` would never be called and the strange-looking `matrix` output occurs again (see [below]{1}).=====
+
+Many thanks to the R core team for fixing the issue in Sep 2019. data.table v1.12.6+ no longer applies the workaround in R >= 4.0.0.
+
+I've read about method dispatch (_e.g._ `merge` may or may not dispatch to `merge.data.table`) but _how_ does R know how to dispatch? Are dots significant or special? How on earth does R know which function to dispatch and when? {#r-dispatch}
+
+This comes up quite a lot but it's really earth-shatteringly simple. A function such as `merge` is _generic_ if it consists of a call to `UseMethod`. When you see people talking about whether or not functions are _generic_ functions they are merely typing the function without `()` afterwards, looking at the program code inside it and if they see a call to `UseMethod` then it is _generic_. What does `UseMethod` do? It literally slaps the function name together with the class of the first argument, separated by period (`.`) and then calls that function, passing along the same arguments. It's that simple. For example, `merge(X, Y)` contains a `UseMethod` call which means it then _dispatches_ (i.e. calls) `paste(\"merge\", class(X), sep = \".\")`. Functions with dots in their name may or may not be methods. The dot is irrelevant really, other than dot being the separator that `UseMethod` uses. Knowing this background should now highlight why, for example, it is obvious to R folk that `as.data.table.data.frame` is the `data.frame` method for the `as.data.table` generic function. Further, it may help to elucidate that, yes, you are correct, it is not obvious from its name alone that `ls.fit` is not the fit method of the `ls` generic function. You only know that by typing `ls` (not `ls()`) and observing it isn't a single call to `UseMethod`.
+
+You might now ask: where is this documented in R? Answer: it's quite clear, but, you need to first know to look in `?UseMethod` and _that_ help file contains:
+
+When a function calling `UseMethod('fun')` is applied to an object with class attribute `c('first', 'second')`, the system searches for a function called `fun.first` and, if it finds it, applies it to the object. If no such function is found a function called `fun.second` is tried. If no class name produces a suitable function, the function `fun.default` is used, if it exists, or an error results.
+
+Happily, an internet search for \"How does R method dispatch work\" (at the time of this writing) returns the `?UseMethod` help page in the top few links. Admittedly, other links rapidly descend into the intricacies of S3 vs S4, internal generics and so on.
+
+However, features like basic S3 dispatch (pasting the function name together with the class name) is why some R folk love R. It's so simple. No complicated registration or signature is required. There isn't much needed to learn. To create the `merge` method for data.table all that was required, literally, was to merely create a function called `merge.data.table`.
+
+Why do `T` and `F` behave differently from `TRUE` and `FALSE` in some `data.table` queries?
+
+Using `T` and `F` as abbreviations for `TRUE` and `FALSE` in `data.table` can lead to unexpected behavior. This is because `T` and `F` are global variables that can be redefined, which causes them to be treated as variable names rather than logical constants. This issue does not occur with `TRUE` and `FALSE`. Avoiding `T` and `F` is advice for using R generally, but it shows up in `data.table` in some perhaps surprising ways, for example:
+
+As a general word of advice, `lintr::T_and_F_symbol_linter()` detects the usage of `T` and `F` and suggests replacing them with `TRUE` and `FALSE` to avoid such issues.
+
+Questions relating to compute time
+
+I have 20 columns and a large number of rows. Why is an expression of one column so quick?
+
+Several reasons:
+
+===== - Only that column is grouped, the other 19 are ignored because data.table inspects the `j` expression and realises it doesn't use the other columns.===== ===== - One memory allocation is made for the largest group only, then that memory is re-used for the other groups. There is very little garbage to collect.===== ===== - R is an in-memory column store; i.e., the columns are contiguous in RAM. Page fetches from RAM into L2 cache are minimised.=====
+
+I don't have a `key` on a large table, but grouping is still really quick. Why is that?
+
+data.table uses radix sorting. This is significantly faster than other sort algorithms. See [our presentations]{1} for more information, in particular from useR!2015 Denmark.
+
+This is also one reason why `setkey()` is quick.
+
+When no `key` is set, or we group in a different order from that of the key, we call it an _ad hoc_ `by`.
+
+Why is grouping by columns in the key faster than an _ad hoc_ `by`?
+
+Because each group is contiguous in RAM, thereby minimising page fetches and memory can be copied in bulk (`memcpy` in C) rather than looping in C.
+
+What are primary and secondary indexes in data.table?
+
+Manual: [`?setkey`]{1} S.O.: [What is the purpose of setting a key in data.table?]{2}
+
+`setkey(DT, col1, col2)` orders the rows by column `col1` then within each group of `col1` it orders by `col2`. This is a _primary index_. The row order is changed _by reference_ in RAM. Subsequent joins and groups on those key columns then take advantage of the sort order for efficiency. (Imagine how difficult looking for a phone number in a printed telephone directory would be if it wasn't sorted by surname then forename. That's literally all `setkey` does. It sorts the rows by the columns you specify.) The index doesn't use any RAM. It simply changes the row order in RAM and marks the key columns. Analogous to a _clustered index_ in SQL.
+
+However, you can only have one primary key because data can only be physically sorted in RAM in one way at a time. Choose the primary index to be the one you use most often (e.g. `[id,date]`). Sometimes there isn't an obvious choice for the primary key or you need to join and group many different columns in different orders. Enter a secondary index. This does use memory (`4*nrow` bytes regardless of the number of columns in the index) to store the order of the rows by the columns you specify, but doesn't actually reorder the rows in RAM. Subsequent joins and groups take advantage of the secondary key's order but need to _hop_ via that index so aren't as efficient as primary indexes. But still, a lot faster than a full vector scan. There is no limit to the number of secondary indexes since each one is just a different ordering vector. Typically you don't need to create secondary indexes. They are created automatically and used for you automatically by using data.table normally; _e.g._ `DT[someCol == someVal, ]` and `DT[someCol %in% someVals, ]` will create, attach and then use the secondary index. This is faster in data.table than a vector scan so automatic indexing is on by default since there is no up-front penalty. There is an option to turn off automatic indexing; _e.g._, if somehow many indexes are being created and even the relatively small amount of extra memory becomes too large.
+
+We use the words _index_ and _key_ interchangeably.
+
+Error messages
+
+\"Could not find function `DT`\"
+
+See above [here]{1} and [here]{2}.
+
+\"unused argument(s) (`MySum = sum(v)`)\"
+
+This error is generated by `DT[ , MySum = sum(v)]`. `DT[ , .(MySum = sum(v))]` was intended, or `DT[ , j = .(MySum = sum(v))]`.
+
+\"`translateCharUTF8` must be called on a `CHARSXP`\"
+
+This error (and similar, _e.g._, \"`getCharCE` must be called on a `CHARSXP`\") may be nothing do with character data or locale. Instead, this can be a symptom of an earlier memory corruption. To date these have been reproducible and fixed (quickly). Please report it to our [issues tracker]{1}.
+
+`cbind(DT, DF)` returns a strange format, _e.g._ `Integer,5` {#cbinderror}
+
+This occurs prior to v1.6.5, for `rbind(DT, DF)` too. Please upgrade to v1.6.7 or later.
+
+\"cannot change value of locked binding for `.SD`\"
+
+`.SD` is locked by design. See `?data.table`. If you'd like to manipulate `.SD` before using it, or returning it, and don't wish to modify `DT` using `:=`, then take a copy first (see `?copy`), _e.g._,
+
+\"cannot change value of locked binding for `.N`\"
+
+Please upgrade to v1.8.1 or later. From this version, if `.N` is returned by `j` it is renamed to `N` to avoid any ambiguity in any subsequent grouping between the `.N` special variable and a column called `\".N\"`.
+
+The old behaviour can be reproduced by forcing `.N` to be called `.N`, like this:
+
+If you are already running v1.8.1 or later then the error message is now more helpful than the \"cannot change value of locked binding\" error, as you can see above, since this vignette was produced using v1.8.1 or later.
+
+The more natural syntax now works:
+
+Warning messages
+
+\"The following object(s) are masked from `package:base`: `cbind`, `rbind`\"
+
+This warning was present in v1.6.5 and v.1.6.6 only, when loading the package. The motivation was to allow `cbind(DT, DF)` to work, but as it transpired, this broke (full) compatibility with package `IRanges`. Please upgrade to v1.6.7 or later.
+
+\"Coerced numeric RHS to integer to match the column's type\"
+
+Hopefully, this is self explanatory. The full message is:
+
+Coerced numeric RHS to integer to match the column's type; may have truncated precision. Either change the column to numeric first by creating a new numeric vector length 5 (nrows of entire table) yourself and assigning that (i.e. 'replace' column), or coerce RHS to integer yourself (e.g. 1L or as.integer) to make your intent clear (and for speed). Or, set the column type correctly up front when you create the table and stick to it, please.
+
+To generate it, try:
+
+Reading data.table from RDS or RData file
+
+`*.RDS` and `*.RData` are file types which can store in-memory R objects on disk efficiently. However, storing data.table into the binary file loses its column over-allocation. This isn't a big deal -- your data.table will be copied in memory on the next _by reference_ operation and throw a warning. Therefore it is recommended to call `setalloccol()` on each data.table loaded with `readRDS()` or `load()` calls.
+
+General questions about the package
+
+v1.3 appears to be missing from the CRAN archive?
+
+That is correct. v1.3 was available on R-Forge only. There were several large changes internally and these took some time to test in development.
+
+Is data.table compatible with S-plus?
+
+Not currently.
+
+===== - A few core parts of the package are written in C and use internal R functions and R structures.===== ===== - The package uses lexical scoping which is one of the differences between R and **S-plus** explained by [R FAQ 3.3.1]{1}=====
+
+Is it available for Linux, Mac and Windows?
+
+Yes, for both 32-bit and 64-bit on all platforms. Thanks to CRAN. There are no special or OS-specific libraries used.
+
+I think it's great. What can I do?
+
+Please file suggestions, bug reports and enhancement requests on our [issues tracker]{1}. This helps make the package better.
+
+Please do star the package on [GitHub]{1}. This helps encourage the developers and helps other R users find the package.
+
+You can submit pull requests to change the code and/or documentation yourself; see our [Contribution Guidelines]{1}.
+
+I think it's not great. How do I warn others about my experience?
+
+We add all articles we know about (whether positive or negative) to the [Articles]{1} page. All pages in the project's wiki on GitHub are open-access with no modify restrictions. Feel free to write an article, link to a negative one someone else wrote that you found, or add a new page to our wiki to collect your criticisms. Please make it constructive so we have a chance to improve.
+
+I have a question. I know the r-help posting guide tells me to contact the maintainer (not r-help), but is there a larger group of people I can ask?
+
+Please see the [support guide]{1} on the project's homepage which contains up-to-date links.
+
+Where are the datatable-help archives?
+
+The [homepage]{1} contains links to the archives in several formats.
+
+I'd prefer not to post on the Issues page, can I mail just one or two people privately?
+
+Sure. You're more likely to get a faster answer from the Issues page or Stack Overflow, though. Further, asking publicly in those places helps build the general knowledge base.
+
+I have created a package that uses data.table. How do I ensure my package is data.table-aware so that inheritance from `data.frame` works?
+
+Please see [this answer]{1}.

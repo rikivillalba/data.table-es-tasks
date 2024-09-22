@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+<meta name="date" content="2024-09-21" />
+
+<title>Using .SD for Data Analysis</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using .SD for Data Analysis</h1>
+<h4 class="date">2024-09-21</h4>
+
+
+
+<p>Esta viñeta explica las formas más comunes de usar la variable
+<code>.SD</code> en los análisis de <code>data.table</code>. Es una
+adaptación de <a href="https://stackoverflow.com/a/47406952/3576984">esta respuesta</a>
+proporcionada en StackOverflow.</p>
+<div id="qué-es-.sd" class="section level1">
+<h1>¿Qué es <code>.SD</code>?</h1>
+<p>En el sentido más amplio, <code>.SD</code> es simplemente una
+abreviatura para capturar una variable que aparece con frecuencia en el
+contexto del análisis de datos. Puede entenderse como
+<em>S</em>ubconjunto de los <em>D</em>atos (o también, en inglés,
+“<em>S</em>ubset, <em>S</em>elfsame, o <em>S</em>elf-reference of the
+<em>D</em>ata”). Es decir, <code>.SD</code> es en su forma más básica
+una <em>referencia reflexiva</em> a la <code>data.table</code> en sí
+misma – como veremos en los ejemplos a continuación, esto es
+particularmente útil para encadenar “consultas”
+(extracciones/subconjuntos/etc. usando <code>[</code>). En particular,
+esto también significa que <code>.SD</code> es <em>en sí mismo una
+<code>data.table</code></em> (con la salvedad de que no permite la
+asignación con <code>:=</code>).</p>
+<p>El uso más simple de <code>.SD</code> es para la creación de
+subconjuntos de columnas (es decir, cuando se especifica
+<code>.SDcols</code>); como esta versión es mucho más sencilla de
+entender, la abordaremos primero a continuación. La interpretación de
+<code>.SD</code> en su segundo uso, los escenarios de agrupación (es
+decir, cuando se especifica <code>by =</code> o <code>keyby =</code>),
+es ligeramente diferente en lo conceptual (aunque en esencia es la
+misma, ya que, después de todo, una operación no agrupada es un caso
+extremo de agrupación con un solo grupo).</p>
+<div id="carga-y-vista-previa-de-datos-de-lahman" class="section level2">
+<h2>Carga y vista previa de datos de Lahman</h2>
+<p>Para que esto parezca más real, en lugar de inventar datos, carguemos
+algunos conjuntos de datos sobre béisbol desde la <a href="https://github.com/cdalzell/Lahman">base de datos Lahman</a>. En
+el uso típico de R, simplemente cargaríamos estos conjuntos de datos
+desde el paquete R <code>Lahman</code>; en este ejemplo, los hemos
+descargado de antemano directamente desde la página de GitHub del
+paquete.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;Teams.RData&#39;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">setDT</span>(Teams)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>Teams</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#       yearID   lgID teamID franchID  divID  Rank     G Ghome     W     L DivWin  WCWin  LgWin</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#        &lt;int&gt; &lt;fctr&gt; &lt;fctr&gt;   &lt;fctr&gt; &lt;char&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#    1:   1871     NA    BS1      BNA   &lt;NA&gt;     3    31    NA    20    10   &lt;NA&gt;   &lt;NA&gt;      N</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#    2:   1871     NA    CH1      CNA   &lt;NA&gt;     2    28    NA    19     9   &lt;NA&gt;   &lt;NA&gt;      N</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#    3:   1871     NA    CL1      CFC   &lt;NA&gt;     8    29    NA    10    19   &lt;NA&gt;   &lt;NA&gt;      N</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#    4:   1871     NA    FW1      KEK   &lt;NA&gt;     7    19    NA     7    12   &lt;NA&gt;   &lt;NA&gt;      N</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#    5:   1871     NA    NY2      NNA   &lt;NA&gt;     5    33    NA    16    17   &lt;NA&gt;   &lt;NA&gt;      N</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#   ---                                                                                        </span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co"># 2891:   2018     NL    SLN      STL      C     3   162    81    88    74      N      N      N</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co"># 2892:   2018     AL    TBA      </span><span class="al">TBD</span><span class="co">      E     3   162    81    90    72      N      N      N</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co"># 2893:   2018     AL    TEX      TEX      W     5   162    81    67    95      N      N      N</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co"># 2894:   2018     AL    TOR      TOR      E     4   162    81    73    89      N      N      N</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co"># 2895:   2018     NL    WAS      WSN      E     2   162    81    82    80      N      N      N</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#        WSWin     R    AB     H   X2B   X3B    HR    BB    SO    SB    CS   HBP    SF    RA    ER</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#       &lt;char&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;int&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#    1:   &lt;NA&gt;   401  1372   426    70    37     3    60    19    73    16    NA    NA   303   109</span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#    2:   &lt;NA&gt;   302  1196   323    52    21    10    60    22    69    21    NA    NA   241    77</span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co">#    3:   &lt;NA&gt;   249  1186   328    35    40     7    26    25    18     8    NA    NA   341   116</span></span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#    4:   &lt;NA&gt;   137   746   178    19     8     2    33     9    16     4    NA    NA   243    97</span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#    5:   &lt;NA&gt;   302  1404   403    43    21     1    33    15    46    15    NA    NA   313   121</span></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#   ---                                                                                           </span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co"># 2891:      N   759  5498  1369   248     9   205   525  1380    63    32    80    48   691   622</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co"># 2892:      N   716  5475  1415   274    43   150   540  1388   128    51   101    50   646   602</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co"># 2893:      N   737  5453  1308   266    24   194   555  1484    74    35    88    34   848   783</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co"># 2894:      N   709  5477  1336   320    16   217   499  1387    47    30    58    37   832   772</span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co"># 2895:      N   771  5517  1402   284    25   191   631  1289   119    33    59    40   682   649</span></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#         ERA    CG   SHO    SV IPouts    HA   HRA   BBA   SOA     E    DP    FP</span></span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#       &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt;</span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#    1:  3.55    22     1     3    828   367     2    42    23   243    24 0.834</span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a><span class="co">#    2:  2.76    25     0     1    753   308     6    28    22   229    16 0.829</span></span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a><span class="co">#    3:  4.11    23     0     0    762   346    13    53    34   234    15 0.818</span></span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a><span class="co">#    4:  5.17    19     1     0    507   261     5    21    17   163     8 0.803</span></span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a><span class="co">#    5:  3.72    32     1     0    879   373     7    42    22   235    14 0.840</span></span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a><span class="co">#   ---                                                                         </span></span>
+<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a><span class="co"># 2891:  3.85     1     8    43   4366  1354   144   593  1337   133   151 0.978</span></span>
+<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a><span class="co"># 2892:  3.74     0    14    52   4345  1236   164   501  1421    85   136 0.986</span></span>
+<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a><span class="co"># 2893:  4.92     1     5    42   4293  1516   222   491  1121   120   168 0.980</span></span>
+<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a><span class="co"># 2894:  4.85     0     3    39   4301  1476   208   551  1298   101   138 0.983</span></span>
+<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a><span class="co"># 2895:  4.04     2     7    40   4338  1320   198   487  1417    64   115 0.989</span></span>
+<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a><span class="co">#                          name                          park attendance   BPF   PPF teamIDBR</span></span>
+<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a><span class="co">#                        &lt;char&gt;                        &lt;char&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;char&gt;</span></span>
+<span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a><span class="co">#    1:    Boston Red Stockings           South End Grounds I         NA   103    98      BOS</span></span>
+<span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a><span class="co">#    2: Chicago White Stockings       Union Base-Ball Grounds         NA   104   102      CHI</span></span>
+<span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a><span class="co">#    3:  Cleveland Forest Citys  National Association Grounds         NA    96   100      CLE</span></span>
+<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a><span class="co">#    4:    Fort Wayne Kekiongas                Hamilton Field         NA   101   107      KEK</span></span>
+<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a><span class="co">#    5:        New York Mutuals      Union Grounds (Brooklyn)         NA    90    88      NYU</span></span>
+<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a><span class="co">#   ---                                                                                      </span></span>
+<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a><span class="co"># 2891:     St. Louis Cardinals             Busch Stadium III    3403587    97    96      STL</span></span>
+<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a><span class="co"># 2892:          Tampa Bay Rays               Tropicana Field    1154973    97    97      TBR</span></span>
+<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a><span class="co"># 2893:           Texas Rangers Rangers Ballpark in Arlington    2107107   112   113      TEX</span></span>
+<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a><span class="co"># 2894:       Toronto Blue Jays                 Rogers Centre    2325281    97    98      TOR</span></span>
+<span id="cb1-55"><a href="#cb1-55" tabindex="-1"></a><span class="co"># 2895:    Washington Nationals                Nationals Park    2529604   106   105      WSN</span></span>
+<span id="cb1-56"><a href="#cb1-56" tabindex="-1"></a><span class="co">#       teamIDlahman45 teamIDretro</span></span>
+<span id="cb1-57"><a href="#cb1-57" tabindex="-1"></a><span class="co">#               &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb1-58"><a href="#cb1-58" tabindex="-1"></a><span class="co">#    1:            BS1         BS1</span></span>
+<span id="cb1-59"><a href="#cb1-59" tabindex="-1"></a><span class="co">#    2:            CH1         CH1</span></span>
+<span id="cb1-60"><a href="#cb1-60" tabindex="-1"></a><span class="co">#    3:            CL1         CL1</span></span>
+<span id="cb1-61"><a href="#cb1-61" tabindex="-1"></a><span class="co">#    4:            FW1         FW1</span></span>
+<span id="cb1-62"><a href="#cb1-62" tabindex="-1"></a><span class="co">#    5:            NY2         NY2</span></span>
+<span id="cb1-63"><a href="#cb1-63" tabindex="-1"></a><span class="co">#   ---                           </span></span>
+<span id="cb1-64"><a href="#cb1-64" tabindex="-1"></a><span class="co"># 2891:            SLN         SLN</span></span>
+<span id="cb1-65"><a href="#cb1-65" tabindex="-1"></a><span class="co"># 2892:            TBA         TBA</span></span>
+<span id="cb1-66"><a href="#cb1-66" tabindex="-1"></a><span class="co"># 2893:            TEX         TEX</span></span>
+<span id="cb1-67"><a href="#cb1-67" tabindex="-1"></a><span class="co"># 2894:            TOR         TOR</span></span>
+<span id="cb1-68"><a href="#cb1-68" tabindex="-1"></a><span class="co"># 2895:            MON         WAS</span></span>
+<span id="cb1-69"><a href="#cb1-69" tabindex="-1"></a></span>
+<span id="cb1-70"><a href="#cb1-70" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;Pitching.RData&#39;</span>)</span>
+<span id="cb1-71"><a href="#cb1-71" tabindex="-1"></a><span class="fu">setDT</span>(Pitching)</span>
+<span id="cb1-72"><a href="#cb1-72" tabindex="-1"></a>Pitching</span>
+<span id="cb1-73"><a href="#cb1-73" tabindex="-1"></a><span class="co">#         playerID yearID stint teamID   lgID     W     L     G    GS    CG   SHO    SV IPouts     H</span></span>
+<span id="cb1-74"><a href="#cb1-74" tabindex="-1"></a><span class="co">#           &lt;char&gt;  &lt;int&gt; &lt;int&gt; &lt;fctr&gt; &lt;fctr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb1-75"><a href="#cb1-75" tabindex="-1"></a><span class="co">#     1: bechtge01   1871     1    PH1     NA     1     2     3     3     2     0     0     78    43</span></span>
+<span id="cb1-76"><a href="#cb1-76" tabindex="-1"></a><span class="co">#     2: brainas01   1871     1    WS3     NA    12    15    30    30    30     0     0    792   361</span></span>
+<span id="cb1-77"><a href="#cb1-77" tabindex="-1"></a><span class="co">#     3: fergubo01   1871     1    NY2     NA     0     0     1     0     0     0     0      3     8</span></span>
+<span id="cb1-78"><a href="#cb1-78" tabindex="-1"></a><span class="co">#     4: fishech01   1871     1    RC1     NA     4    16    24    24    22     1     0    639   295</span></span>
+<span id="cb1-79"><a href="#cb1-79" tabindex="-1"></a><span class="co">#     5: fleetfr01   1871     1    NY2     NA     0     1     1     1     1     0     0     27    20</span></span>
+<span id="cb1-80"><a href="#cb1-80" tabindex="-1"></a><span class="co">#    ---                                                                                            </span></span>
+<span id="cb1-81"><a href="#cb1-81" tabindex="-1"></a><span class="co"># 46695: zamorda01   2018     1    NYN     NL     1     0    16     0     0     0     0     27     6</span></span>
+<span id="cb1-82"><a href="#cb1-82" tabindex="-1"></a><span class="co"># 46696: zastrro01   2018     1    CHN     NL     1     0     6     0     0     0     0     17     6</span></span>
+<span id="cb1-83"><a href="#cb1-83" tabindex="-1"></a><span class="co"># 46697: zieglbr01   2018     1    MIA     NL     1     5    53     0     0     0    10    156    49</span></span>
+<span id="cb1-84"><a href="#cb1-84" tabindex="-1"></a><span class="co"># 46698: zieglbr01   2018     2    ARI     NL     1     1    29     0     0     0     0     65    22</span></span>
+<span id="cb1-85"><a href="#cb1-85" tabindex="-1"></a><span class="co"># 46699: zimmejo02   2018     1    DET     AL     7     8    25    25     0     0     0    394   140</span></span>
+<span id="cb1-86"><a href="#cb1-86" tabindex="-1"></a><span class="co">#           ER    HR    BB    SO BAOpp   ERA   IBB    WP   HBP    BK   BFP    GF     R    SH    SF</span></span>
+<span id="cb1-87"><a href="#cb1-87" tabindex="-1"></a><span class="co">#        &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb1-88"><a href="#cb1-88" tabindex="-1"></a><span class="co">#     1:    23     0    11     1    NA  7.96    NA     7    NA     0   146     0    42    NA    NA</span></span>
+<span id="cb1-89"><a href="#cb1-89" tabindex="-1"></a><span class="co">#     2:   132     4    37    13    NA  4.50    NA     7    NA     0  1291     0   292    NA    NA</span></span>
+<span id="cb1-90"><a href="#cb1-90" tabindex="-1"></a><span class="co">#     3:     3     0     0     0    NA 27.00    NA     2    NA     0    14     0     9    NA    NA</span></span>
+<span id="cb1-91"><a href="#cb1-91" tabindex="-1"></a><span class="co">#     4:   103     3    31    15    NA  4.35    NA    20    NA     0  1080     1   257    NA    NA</span></span>
+<span id="cb1-92"><a href="#cb1-92" tabindex="-1"></a><span class="co">#     5:    10     0     3     0    NA 10.00    NA     0    NA     0    57     0    21    NA    NA</span></span>
+<span id="cb1-93"><a href="#cb1-93" tabindex="-1"></a><span class="co">#    ---                                                                                          </span></span>
+<span id="cb1-94"><a href="#cb1-94" tabindex="-1"></a><span class="co"># 46695:     3     1     3    16 0.194  3.00     1     0     1     0    36     4     3     1     0</span></span>
+<span id="cb1-95"><a href="#cb1-95" tabindex="-1"></a><span class="co"># 46696:     3     0     4     3 0.286  4.76     0     0     1     0    26     2     3     0     0</span></span>
+<span id="cb1-96"><a href="#cb1-96" tabindex="-1"></a><span class="co"># 46697:    23     7    17    37 0.254  3.98     4     1     2     0   213    23    25     0     1</span></span>
+<span id="cb1-97"><a href="#cb1-97" tabindex="-1"></a><span class="co"># 46698:     9     1     8    13 0.265  3.74     2     0     0     0    92     1     9     0     1</span></span>
+<span id="cb1-98"><a href="#cb1-98" tabindex="-1"></a><span class="co"># 46699:    66    28    26   111 0.269  4.52     0     1     2     0   556     0    76     2     5</span></span>
+<span id="cb1-99"><a href="#cb1-99" tabindex="-1"></a><span class="co">#         GIDP</span></span>
+<span id="cb1-100"><a href="#cb1-100" tabindex="-1"></a><span class="co">#        &lt;int&gt;</span></span>
+<span id="cb1-101"><a href="#cb1-101" tabindex="-1"></a><span class="co">#     1:    NA</span></span>
+<span id="cb1-102"><a href="#cb1-102" tabindex="-1"></a><span class="co">#     2:    NA</span></span>
+<span id="cb1-103"><a href="#cb1-103" tabindex="-1"></a><span class="co">#     3:    NA</span></span>
+<span id="cb1-104"><a href="#cb1-104" tabindex="-1"></a><span class="co">#     4:    NA</span></span>
+<span id="cb1-105"><a href="#cb1-105" tabindex="-1"></a><span class="co">#     5:    NA</span></span>
+<span id="cb1-106"><a href="#cb1-106" tabindex="-1"></a><span class="co">#    ---      </span></span>
+<span id="cb1-107"><a href="#cb1-107" tabindex="-1"></a><span class="co"># 46695:     1</span></span>
+<span id="cb1-108"><a href="#cb1-108" tabindex="-1"></a><span class="co"># 46696:     0</span></span>
+<span id="cb1-109"><a href="#cb1-109" tabindex="-1"></a><span class="co"># 46697:    11</span></span>
+<span id="cb1-110"><a href="#cb1-110" tabindex="-1"></a><span class="co"># 46698:     3</span></span>
+<span id="cb1-111"><a href="#cb1-111" tabindex="-1"></a><span class="co"># 46699:     4</span></span></code></pre></div>
+<p>Los lectores familiarizados con la jerga del béisbol encontrarán
+familiar el contenido de las tablas: “Equipos” registra algunas
+estadísticas de un equipo determinado en un año determinado, mientras
+que “Lanzamientos” registra las estadísticas de un lanzador determinado
+en un año determinado. Consulte la <a href="https://github.com/cdalzell/Lahman">documentación</a> y explore
+los datos un poco antes de familiarizarse con su estructura.</p>
+</div>
+</div>
+<div id="sd-en-datos-no-agrupados" class="section level1">
+<h1><code>.SD</code> en datos no agrupados</h1>
+<p>Para ilustrar lo que queremos decir sobre la naturaleza reflexiva de
+<code>.SD</code>, consideremos su uso más banal:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>Pitching[ , .SD]</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#         playerID yearID stint teamID   lgID     W     L     G    GS    CG   SHO    SV IPouts     H</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#           &lt;char&gt;  &lt;int&gt; &lt;int&gt; &lt;fctr&gt; &lt;fctr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#     1: bechtge01   1871     1    PH1     NA     1     2     3     3     2     0     0     78    43</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#     2: brainas01   1871     1    WS3     NA    12    15    30    30    30     0     0    792   361</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#     3: fergubo01   1871     1    NY2     NA     0     0     1     0     0     0     0      3     8</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#     4: fishech01   1871     1    RC1     NA     4    16    24    24    22     1     0    639   295</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#     5: fleetfr01   1871     1    NY2     NA     0     1     1     1     1     0     0     27    20</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#    ---                                                                                            </span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># 46695: zamorda01   2018     1    NYN     NL     1     0    16     0     0     0     0     27     6</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co"># 46696: zastrro01   2018     1    CHN     NL     1     0     6     0     0     0     0     17     6</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co"># 46697: zieglbr01   2018     1    MIA     NL     1     5    53     0     0     0    10    156    49</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co"># 46698: zieglbr01   2018     2    ARI     NL     1     1    29     0     0     0     0     65    22</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># 46699: zimmejo02   2018     1    DET     AL     7     8    25    25     0     0     0    394   140</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#           ER    HR    BB    SO BAOpp   ERA   IBB    WP   HBP    BK   BFP    GF     R    SH    SF</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#        &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#     1:    23     0    11     1    NA  7.96    NA     7    NA     0   146     0    42    NA    NA</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#     2:   132     4    37    13    NA  4.50    NA     7    NA     0  1291     0   292    NA    NA</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#     3:     3     0     0     0    NA 27.00    NA     2    NA     0    14     0     9    NA    NA</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#     4:   103     3    31    15    NA  4.35    NA    20    NA     0  1080     1   257    NA    NA</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#     5:    10     0     3     0    NA 10.00    NA     0    NA     0    57     0    21    NA    NA</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#    ---                                                                                          </span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co"># 46695:     3     1     3    16 0.194  3.00     1     0     1     0    36     4     3     1     0</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co"># 46696:     3     0     4     3 0.286  4.76     0     0     1     0    26     2     3     0     0</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co"># 46697:    23     7    17    37 0.254  3.98     4     1     2     0   213    23    25     0     1</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co"># 46698:     9     1     8    13 0.265  3.74     2     0     0     0    92     1     9     0     1</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co"># 46699:    66    28    26   111 0.269  4.52     0     1     2     0   556     0    76     2     5</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#         GIDP</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="co">#        &lt;int&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">#     1:    NA</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co">#     2:    NA</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">#     3:    NA</span></span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co">#     4:    NA</span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co">#     5:    NA</span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a><span class="co">#    ---      </span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a><span class="co"># 46695:     1</span></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="co"># 46696:     0</span></span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="co"># 46697:    11</span></span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a><span class="co"># 46698:     3</span></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co"># 46699:     4</span></span></code></pre></div>
+<p>Es decir, <code>Pitching[ , .SD]</code> simplemente ha devuelto la
+tabla completa, es decir, una forma demasiado aparatosa de escribir
+<code>Pitching</code> o <code>Pitching[]</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">identical</span>(Pitching, Pitching[ , .SD])</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># [1] TRUE</span></span></code></pre></div>
+<p>En términos de subconjuntos, <code>.SD</code> sigue siendo un
+subconjunto de los datos, sólo que es trivial (es el conjunto en
+sí).</p>
+<div id="subconjunto-de-columna-.sdcols" class="section level2">
+<h2>Subconjunto de columna: <code>.SDcols</code></h2>
+<p>La primera forma de influir en lo que es <code>.SD</code> es limitar
+las <em>columnas</em> contenidas en <code>.SD</code> usando el argumento
+<code>.SDcols</code> en <code>[</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># W: Wins; L: Losses; G: Games</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>Pitching[ , .SD, .SDcols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;W&#39;</span>, <span class="st">&#39;L&#39;</span>, <span class="st">&#39;G&#39;</span>)]</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#            W     L     G</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#        &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#     1:     1     2     3</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#     2:    12    15    30</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#     3:     0     0     1</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#     4:     4    16    24</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#     5:     0     1     1</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#    ---                  </span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co"># 46695:     1     0    16</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co"># 46696:     1     0     6</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co"># 46697:     1     5    53</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co"># 46698:     1     1    29</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co"># 46699:     7     8    25</span></span></code></pre></div>
+<p>Esto es solo para ilustrar, y fue bastante aburrido. Además de
+aceptar un vector de caracteres, <code>.SDcols</code> también
+acepta:</p>
+<ol style="list-style-type: decimal">
+<li>cualquier función como <code>is.character</code> para filtrar
+<em>columnas</em> =====2. la función^{*} <code>patterns()</code> para
+filtrar <em>nombres de columnas</em> mediante expresiones regulares</li>
+<li>vectores enteros y lógicos=====</li>
+</ol>
+<p>*ver <code>?patrones</code> para más detalles</p>
+<p>Este uso simple se presta a una amplia variedad de operaciones de
+manipulación de datos altamente beneficiosas y omnipresentes:</p>
+</div>
+<div id="conversión-de-tipo-de-columna" class="section level2">
+<h2>Conversión de tipo de columna</h2>
+<p>La conversión de tipos de columnas es una realidad en la manipulación
+de datos. Aunque <a href="https://github.com/Rdatatable/data.table/pull/2545"><code>fwrite</code>
+recientemente obtuvo la capacidad de declarar la clase de cada columna
+por adelantado</a>, no todos los conjuntos de datos provienen de
+<code>fread</code> (por ejemplo, en esta viñeta) y las conversiones
+entre tipos
+<code>character</code>/<code>factor</code>/<code>numeric</code> son
+comunes. Podemos usar <code>.SD</code> y <code>.SDcols</code> para
+convertir por lotes grupos de columnas a un tipo común.</p>
+<p>Observamos que las siguientes columnas se almacenan como
+<code>character</code> en el conjunto de datos <code>teams</code>, pero
+sería más lógico almacenarlas como “factor”:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># teamIDBR: Team ID used by Baseball Reference website</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co"># teamIDlahman45: Team ID used in Lahman database version 4.5</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co"># teamIDretro: Team ID used by Retrosheet</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>fkt <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;teamIDBR&#39;</span>, <span class="st">&#39;teamIDlahman45&#39;</span>, <span class="st">&#39;teamIDretro&#39;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># confirm that they&#39;re stored as `character`</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="fu">str</span>(Teams[ , ..fkt])</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co"># Classes &#39;data.table&#39; and &#39;data.frame&#39;:    2895 obs. of  3 variables:</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#  $ teamIDBR      : chr  &quot;BOS&quot; &quot;CHI&quot; &quot;CLE&quot; &quot;KEK&quot; ...</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#  $ teamIDlahman45: chr  &quot;BS1&quot; &quot;CH1&quot; &quot;CL1&quot; &quot;FW1&quot; ...</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#  $ teamIDretro   : chr  &quot;BS1&quot; &quot;CH1&quot; &quot;CL1&quot; &quot;FW1&quot; ...</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt;</span></span></code></pre></div>
+<p>La sintaxis para convertir ahora estas columnas a “factor” es
+sencilla:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>Teams[ , <span class="fu">names</span>(.SD) <span class="sc">:=</span> <span class="fu">lapply</span>(.SD, factor), .SDcols <span class="ot">=</span> <span class="fu">patterns</span>(<span class="st">&#39;teamID&#39;</span>)]</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co"># print out the first column to demonstrate success</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">unique</span>(Teams[[fkt[<span class="dv">1</span><span class="dt">L</span>]]]))</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># [1] BOS CHI CLE KEK NYU ATH</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co"># 101 Levels: ALT ANA ARI ATH ATL BAL BLA BLN BLU BOS BRA BRG BRO BSN BTT BUF BWW CAL CEN CHC ... WSN</span></span></code></pre></div>
+<p>Nota:</p>
+<p>=====1. <code>:=</code> es un operador de asignación para actualizar
+la <code>data.table</code> en su lugar sin hacer una copia. Consulte <a href="https://cran.r-project.org/package=data.table/vignettes/datatable-reference-semantics.html">semántica
+de referencia</a> para obtener más información. 2. El LHS,
+<code>names(.SD)</code>, indica qué columnas estamos actualizando; en
+este caso, actualizamos todo el <code>.SD</code>.===== =====3. El RHS,
+<code>lapply()</code>, recorre cada columna del <code>.SD</code> y
+convierte la columna en un factor. 4. Usamos <code>.SDcols</code> para
+seleccionar solo columnas que tengan el patrón
+<code>teamID</code>.=====</p>
+<p>Nuevamente, el argumento <code>.SDcols</code> es bastante flexible;
+anteriormente, proporcionamos <code>patterns</code> pero también
+podríamos haber proporcionado <code>fkt</code> o cualquier vector
+<code>character</code> de nombres de columnas. En otras situaciones, es
+más conveniente proporcionar un vector de enteros (<code>integer</code>)
+de posiciones de columnas o un vector <code>logical</code> que indique
+la inclusión/exclusión de cada columna. Finalmente, el uso de una
+función para filtrar columnas es muy útil.</p>
+<p>Por ejemplo, podríamos hacer lo siguiente para convertir todas las
+columnas de tipo <code>factor</code> a <code>character</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>fct_idx <span class="ot">=</span> Teams[, <span class="fu">which</span>(<span class="fu">sapply</span>(.SD, is.factor))] <span class="co"># column numbers to show the class changing</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">str</span>(Teams[[fct_idx[<span class="dv">1</span><span class="dt">L</span>]]])</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#  Factor w/ 7 levels &quot;AA&quot;,&quot;AL&quot;,&quot;FL&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>Teams[ , <span class="fu">names</span>(.SD) <span class="sc">:=</span> <span class="fu">lapply</span>(.SD, as.character), .SDcols <span class="ot">=</span> is.factor]</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="fu">str</span>(Teams[[fct_idx[<span class="dv">1</span><span class="dt">L</span>]]])</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#  chr [1:2895] &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; ...</span></span></code></pre></div>
+<p>Por último, podemos hacer una coincidencia basada en patrones de
+columnas en <code>.SDcols</code> para seleccionar todas las columnas que
+contienen <code>team</code> hasta <code>factor</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>Teams[ , .SD, .SDcols <span class="ot">=</span> <span class="fu">patterns</span>(<span class="st">&#39;team&#39;</span>)]</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#       teamID teamIDBR teamIDlahman45 teamIDretro</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#       &lt;char&gt;   &lt;char&gt;         &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#    1:    BS1      BOS            BS1         BS1</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#    2:    CH1      CHI            CH1         CH1</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#    3:    CL1      CLE            CL1         CL1</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#    4:    FW1      KEK            FW1         FW1</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#    5:    NY2      NYU            NY2         NY2</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#   ---                                           </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co"># 2891:    SLN      STL            SLN         SLN</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co"># 2892:    TBA      TBR            TBA         TBA</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co"># 2893:    TEX      TEX            TEX         TEX</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co"># 2894:    TOR      TOR            TOR         TOR</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co"># 2895:    WAS      WSN            MON         WAS</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>Teams[ , <span class="fu">names</span>(.SD) <span class="sc">:=</span> <span class="fu">lapply</span>(.SD, factor), .SDcols <span class="ot">=</span> <span class="fu">patterns</span>(<span class="st">&#39;team&#39;</span>)]</span></code></pre></div>
+<p>** Una salvedad a lo anterior: usar números de columna
+<em>explícitamente</em> (como <code>DT[ , (1) := rnorm(.N)]</code>) es
+una mala práctica y puede provocar que el código se corrompa de forma
+silenciosa con el tiempo si cambian las posiciones de las columnas.
+Incluso el uso implícito de números puede ser peligroso si no mantenemos
+un control inteligente/estricto sobre el orden en que creamos el índice
+numerado y cuándo lo usamos.</p>
+</div>
+<div id="controlar-el-lado-derecho-rhs-de-un-modelo" class="section level2">
+<h2>Controlar el lado derecho (RHS) de un modelo</h2>
+<p>La variación de la especificación del modelo es una característica
+fundamental del análisis estadístico sólido. Intentemos predecir la
+efectividad (promedio de carreras limpias, una medida del rendimiento)
+de un lanzador utilizando el pequeño conjunto de covariables disponibles
+en la tabla “Lanzamiento”. ¿Cómo varía la relación (lineal) entre
+<code>W</code> (victorias) y <code>ERA</code> según qué otras
+covariables se incluyan en la especificación?</p>
+<p>A continuación se muestra un breve script que aprovecha el poder de
+<code>.SD</code> y que explora esta pregunta:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># this generates a list of the 2^k possible extra variables</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#   for models of the form ERA ~ G + (...)</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>extra_var <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;yearID&#39;</span>, <span class="st">&#39;teamID&#39;</span>, <span class="st">&#39;G&#39;</span>, <span class="st">&#39;L&#39;</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>models <span class="ot">=</span> <span class="fu">unlist</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="fu">lapply</span>(<span class="dv">0</span><span class="dt">L</span><span class="sc">:</span><span class="fu">length</span>(extra_var), combn, <span class="at">x =</span> extra_var, <span class="at">simplify =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">recursive =</span> <span class="cn">FALSE</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co"># here are 16 visually distinct colors, taken from the list of 20 here:</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#   https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>col16 <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;#e6194b&#39;</span>, <span class="st">&#39;#3cb44b&#39;</span>, <span class="st">&#39;#ffe119&#39;</span>, <span class="st">&#39;#0082c8&#39;</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>          <span class="st">&#39;#f58231&#39;</span>, <span class="st">&#39;#911eb4&#39;</span>, <span class="st">&#39;#46f0f0&#39;</span>, <span class="st">&#39;#f032e6&#39;</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>          <span class="st">&#39;#d2f53c&#39;</span>, <span class="st">&#39;#fabebe&#39;</span>, <span class="st">&#39;#008080&#39;</span>, <span class="st">&#39;#e6beff&#39;</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>          <span class="st">&#39;#aa6e28&#39;</span>, <span class="st">&#39;#fffac8&#39;</span>, <span class="st">&#39;#800000&#39;</span>, <span class="st">&#39;#aaffc3&#39;</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="fu">par</span>(<span class="at">oma =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>lm_coef <span class="ot">=</span> <span class="fu">sapply</span>(models, <span class="cf">function</span>(rhs) {</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>  <span class="co"># using ERA ~ . and data = .SD, then varying which</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>  <span class="co">#   columns are included in .SD allows us to perform this</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>  <span class="co">#   iteration over 16 models succinctly.</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>  <span class="co">#   coef(.)[&#39;W&#39;] extracts the W coefficient from each model fit</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>  Pitching[ , <span class="fu">coef</span>(<span class="fu">lm</span>(ERA <span class="sc">~</span> ., <span class="at">data =</span> .SD))[<span class="st">&#39;W&#39;</span>], .SDcols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;W&#39;</span>, rhs)]</span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>})</span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="fu">barplot</span>(lm_coef, <span class="at">names.arg =</span> <span class="fu">sapply</span>(models, paste, <span class="at">collapse =</span> <span class="st">&#39;/&#39;</span>),</span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a>        <span class="at">main =</span> <span class="st">&#39;Wins Coefficient</span><span class="sc">\n</span><span class="st">With Various Covariates&#39;</span>,</span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a>        <span class="at">col =</span> col16, <span class="at">las =</span> <span class="dv">2</span><span class="dt">L</span>, <span class="at">cex.names =</span> <span class="fl">0.8</span>)</span></code></pre></div>
+<div class="figure">
+<img role="img" aria-label="Fit OLS coefficient on W, various specifications, depicted as bars with distinct colors." src="data:image/png;base64,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" alt="Fit OLS coefficient on W, various specifications, depicted as bars with distinct colors." width="100%" />
+<p class="caption">
+Fit OLS coefficient on W, various specifications, depicted as bars with
+distinct colors.
+</p>
+</div>
+<p>El coeficiente siempre tiene el signo esperado (los mejores
+lanzadores tienden a tener más victorias y menos carreras permitidas),
+pero la magnitud puede variar sustancialmente dependiendo de qué más
+controlemos.</p>
+</div>
+<div id="uniones-condicionales" class="section level2">
+<h2>Uniones condicionales</h2>
+<p>La sintaxis de <code>data.table</code> es hermosa por su simplicidad
+y robustez. La sintaxis <code>x[i]</code> maneja de manera flexible tres
+enfoques comunes para la creación de subconjuntos: cuando <code>i</code>
+es un vector <code>lógico</code>, <code>x[i]</code> devolverá aquellas
+filas de <code>x</code> correspondientes a donde <code>i</code> es
+<code>VERDADERO</code>; cuando <code>i</code> es <em>otra
+<code>data.table</code></em> (o una <code>lista</code>), se realiza una
+<code>unión</code> (derecha) (en la forma simple, utilizando las
+<code>key</code>s de <code>x</code> e <code>i</code>, de lo contrario,
+cuando se especifica <code>on =</code>, utilizando las coincidencias de
+esas columnas); y cuando <code>i</code> es un carácter, se interpreta
+como una abreviatura de <code>x[list(i)]</code>, es decir, como una
+unión.</p>
+<p>Esto es excelente en general, pero se queda corto cuando deseamos
+realizar una <em>unión condicional</em>, en donde la naturaleza exacta
+de la relación entre tablas depende de algunas características de las
+filas en una o más columnas.</p>
+<p>Este ejemplo es ciertamente un poco artificial, pero ilustra la idea;
+véase aquí (<a href="https://stackoverflow.com/questions/31329939/conditional-keyed-join-update-and-update-a-flag-column-for-matches">1</a>,
+<a href="https://stackoverflow.com/questions/29658627/conditional-binary-join-and-update-by-reference-using-the-data-table-package">2</a>)
+para más información.</p>
+<p>El objetivo es agregar una columna <code>team_performance</code> a la
+tabla <code>Pitching</code> que registre el desempeño (rango) del mejor
+lanzador de cada equipo (medido por la ERA más baja, entre los
+lanzadores con al menos 6 juegos registrados).</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># to exclude pitchers with exceptional performance in a few games,</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#   subset first; then define rank of pitchers within their team each year</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#   (in general, we should put more care into the &#39;ties.method&#39; of frank)</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>Pitching[G <span class="sc">&gt;</span> <span class="dv">5</span>, rank_in_team <span class="sc">:=</span> <span class="fu">frank</span>(ERA), by <span class="ot">=</span> .(teamID, yearID)]</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>Pitching[rank_in_team <span class="sc">==</span> <span class="dv">1</span>, team_performance <span class="sc">:=</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>           Teams[.SD, Rank, on <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;teamID&#39;</span>, <span class="st">&#39;yearID&#39;</span>)]]</span></code></pre></div>
+<p>Tenga en cuenta que la sintaxis <code>x[y]</code> devuelve valores
+<code>nrow(y)</code> (es decir, es una unión derecha), por lo que
+<code>.SD</code> está a la derecha en <code>Teams[.SD]</code> (ya que el
+RHS de <code>:=</code> en este caso requiere valores
+<code>nrow(Pitching[rank_in_team == 1])</code>).</p>
+</div>
+</div>
+<div id="operaciones-agrupadas-.sd" class="section level1">
+<h1>Operaciones agrupadas <code>.SD</code></h1>
+<p>A menudo, nos gustaría realizar alguna operación en nuestros datos
+<em>a nivel de grupo</em>. Cuando especificamos <code>by =</code> (o
+<code>keyby =</code>), el modelo mental de lo que sucede cuando
+<code>data.table</code> procesa <code>j</code> es pensar en su
+<code>data.table</code> como si estuviera dividida en varios
+componentes, cada uno un sub-<code>data.table</code> que corresponde a
+un único valor de su(s) variable(s) <code>by</code>:</p>
+<p><img role="img" aria-label="Agrupamiento, ilustrado" src="plots/grouping_illustration.png" alt="Agrupamiento, ilustrado" />
+<!-- 'A visual depiction of how grouping works. On the left is a grid. The first column is titled "ID COLUMN" with values the capital letters A through G, and the rest of the data is unlabelled, but is in a darker color and simply has "Data" written to indicate that's arbitrary. A right arrow shows how this data is split into groups. Each capital letter A through G has a grid on the right-hand side; the grid on the left has been subdivided to create that on the right.' --></p>
+<p>En el caso de la agrupación, <code>.SD</code> es de naturaleza
+múltiple: se refiere a <em>cada</em> una de estas
+sub-<code>data.table</code>s, <em>una a la vez</em> (de manera un poco
+más precisa, el alcance de <code>.SD</code> es una única
+sub-<code>data.table</code>). Esto nos permite expresar de manera
+concisa una operación que nos gustaría realizar en <em>cada
+sub-<code>data.table</code></em> antes de que se nos devuelva el
+resultado reensamblado.</p>
+<p>Esto es útil en una variedad de configuraciones, las más comunes de
+las cuales se presentan aquí:</p>
+<div id="seleccionar-un-subconjunto-de-cada-grupo" class="section level2">
+<h2>Seleccionar un subconjunto de cada grupo</h2>
+<p>Obtengamos la temporada más reciente de datos de cada equipo en los
+datos de Lahman. Esto se puede hacer de forma muy sencilla con:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># the data is already sorted by year; if it weren&#39;t</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#   we could do Teams[order(yearID), .SD[.N], by = teamID]</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>Teams[ , .SD[.N], by <span class="ot">=</span> teamID]</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#      teamID yearID   lgID franchID  divID  Rank     G Ghome     W     L DivWin  WCWin  LgWin  WSWin</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#      &lt;fctr&gt;  &lt;int&gt; &lt;char&gt;   &lt;char&gt; &lt;char&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#   1:    BS1   1875     NA      BNA   &lt;NA&gt;     1    82    NA    71     8   &lt;NA&gt;   &lt;NA&gt;      Y   &lt;NA&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#   2:    CH1   1871     NA      CNA   &lt;NA&gt;     2    28    NA    19     9   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#   3:    CL1   1872     NA      CFC   &lt;NA&gt;     7    22    NA     6    16   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#   4:    FW1   1871     NA      KEK   &lt;NA&gt;     7    19    NA     7    12   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#   5:    NY2   1875     NA      NNA   &lt;NA&gt;     6    71    NA    30    38   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#  ---                                                                                               </span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co"># 145:    ANA   2004     AL      ANA      W     1   162    81    92    70      Y      N      N      N</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co"># 146:    ARI   2018     NL      ARI      W     3   162    81    82    80      N      N      N      N</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co"># 147:    MIL   2018     NL      MIL      C     1   163    81    96    67      Y      N      N      N</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co"># 148:    TBA   2018     AL      </span><span class="al">TBD</span><span class="co">      E     3   162    81    90    72      N      N      N      N</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co"># 149:    MIA   2018     NL      FLA      E     5   161    81    63    98      N      N      N      N</span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#          R    AB     H   X2B   X3B    HR    BB    SO    SB    CS   HBP    SF    RA    ER   ERA</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#      &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;int&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt;</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#   1:   831  3515  1128   167    51    15    33    52    93    37    NA    NA   343   152  1.87</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#   2:   302  1196   323    52    21    10    60    22    69    21    NA    NA   241    77  2.76</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="co">#   3:   174   943   272    28     5     0    17    13    12     3    NA    NA   254   126  5.70</span></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#   4:   137   746   178    19     8     2    33     9    16     4    NA    NA   243    97  5.17</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#   5:   328  2685   633    82    21     7    19    47    20    24    NA    NA   425   174  2.46</span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#  ---                                                                                          </span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co"># 145:   836  5675  1603   272    37   162   450   942   143    46    73    41   734   692  4.28</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co"># 146:   693  5460  1283   259    50   176   560  1460    79    25    52    45   644   605  3.72</span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="co"># 147:   754  5542  1398   252    24   218   537  1458   124    32    58    41   659   606  3.73</span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a><span class="co"># 148:   716  5475  1415   274    43   150   540  1388   128    51   101    50   646   602  3.74</span></span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="co"># 149:   589  5488  1303   222    24   128   455  1384    45    31    73    31   809   762  4.76</span></span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a><span class="co">#         CG   SHO    SV IPouts    HA   HRA   BBA   SOA     E    DP    FP                    name</span></span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="co">#      &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt;                  &lt;char&gt;</span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="co">#   1:    60    10    17   2196   751     2    33   110   483    56 0.870    Boston Red Stockings</span></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a><span class="co">#   2:    25     0     1    753   308     6    28    22   229    16 0.829 Chicago White Stockings</span></span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a><span class="co">#   3:    15     0     0    597   285     6    24    11   184    17 0.816  Cleveland Forest Citys</span></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="co">#   4:    19     1     0    507   261     5    21    17   163     8 0.803    Fort Wayne Kekiongas</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co">#   5:    70     3     0   1910   718     4    21    77   526    30 0.838        New York Mutuals</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="co">#  ---                                                                                           </span></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a><span class="co"># 145:     2    11    50   4363  1476   170   502  1164    90   126 0.985          Anaheim Angels</span></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="co"># 146:     2     9    39   4389  1313   174   522  1448    75   152 0.988    Arizona Diamondbacks</span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a><span class="co"># 147:     0    14    49   4383  1259   173   553  1428   108   141 0.982       Milwaukee Brewers</span></span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a><span class="co"># 148:     0    14    52   4345  1236   164   501  1421    85   136 0.986          Tampa Bay Rays</span></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="co"># 149:     1    12    30   4326  1388   192   605  1249    83   133 0.986           Miami Marlins</span></span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a><span class="co">#                              park attendance   BPF   PPF teamIDBR teamIDlahman45 teamIDretro</span></span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a><span class="co">#                            &lt;char&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;fctr&gt;         &lt;fctr&gt;      &lt;fctr&gt;</span></span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a><span class="co">#   1:          South End Grounds I         NA   103    96      BOS            BS1         BS1</span></span>
+<span id="cb11-46"><a href="#cb11-46" tabindex="-1"></a><span class="co">#   2:      Union Base-Ball Grounds         NA   104   102      CHI            CH1         CH1</span></span>
+<span id="cb11-47"><a href="#cb11-47" tabindex="-1"></a><span class="co">#   3: National Association Grounds         NA    96   100      CLE            CL1         CL1</span></span>
+<span id="cb11-48"><a href="#cb11-48" tabindex="-1"></a><span class="co">#   4:               Hamilton Field         NA   101   107      KEK            FW1         FW1</span></span>
+<span id="cb11-49"><a href="#cb11-49" tabindex="-1"></a><span class="co">#   5:     Union Grounds (Brooklyn)         NA    99   100      NYU            NY2         NY2</span></span>
+<span id="cb11-50"><a href="#cb11-50" tabindex="-1"></a><span class="co">#  ---                                                                                        </span></span>
+<span id="cb11-51"><a href="#cb11-51" tabindex="-1"></a><span class="co"># 145:    Angels Stadium of Anaheim    3375677    97    97      ANA            ANA         ANA</span></span>
+<span id="cb11-52"><a href="#cb11-52" tabindex="-1"></a><span class="co"># 146:                  Chase Field    2242695   108   107      ARI            ARI         ARI</span></span>
+<span id="cb11-53"><a href="#cb11-53" tabindex="-1"></a><span class="co"># 147:                  Miller Park    2850875   102   101      MIL            ML4         MIL</span></span>
+<span id="cb11-54"><a href="#cb11-54" tabindex="-1"></a><span class="co"># 148:              Tropicana Field    1154973    97    97      TBR            TBA         TBA</span></span>
+<span id="cb11-55"><a href="#cb11-55" tabindex="-1"></a><span class="co"># 149:                 Marlins Park     811104    89    90      MIA            FLO         MIA</span></span></code></pre></div>
+<p>Recuerde que <code>.SD</code> es en sí mismo una
+<code>data.table</code>, y que <code>.N</code> se refiere al número
+total de filas en un grupo (es igual a <code>nrow(.SD)</code> dentro de
+cada grupo), por lo que <code>.SD[.N]</code> devuelve la <em>totalidad
+de <code>.SD</code></em> para la fila final asociada con cada
+<code>teamID</code>.</p>
+<p>Otra versión común de esto es utilizar <code>.SD[1L]</code> para
+obtener la <em>primera</em> observación para cada grupo, o
+<code>.SD[sample(.N, 1L)]</code> para devolver una fila
+<em>aleatoria</em> para cada grupo.</p>
+</div>
+<div id="obtener-el-valor-óptimo-de-cada-grupo" class="section level2">
+<h2>Obtener el valor óptimo de cada grupo</h2>
+<p>Supongamos que queremos obtener el <em>mejor</em> año de cada equipo,
+medido por la cantidad total de carreras anotadas (<code>R</code>;
+podríamos ajustar esto fácilmente para hacer referencia a otras
+métricas, por supuesto). En lugar de tomar un elemento <em>fijo</em> de
+cada sub-<code>data.table</code>, ahora definimos el índice deseado
+<em>dinámicamente</em> de la siguiente manera:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>Teams[ , .SD[<span class="fu">which.max</span>(R)], by <span class="ot">=</span> teamID]</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#      teamID yearID   lgID franchID  divID  Rank     G Ghome     W     L DivWin  WCWin  LgWin  WSWin</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#      &lt;fctr&gt;  &lt;int&gt; &lt;char&gt;   &lt;char&gt; &lt;char&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#   1:    BS1   1875     NA      BNA   &lt;NA&gt;     1    82    NA    71     8   &lt;NA&gt;   &lt;NA&gt;      Y   &lt;NA&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#   2:    CH1   1871     NA      CNA   &lt;NA&gt;     2    28    NA    19     9   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#   3:    CL1   1871     NA      CFC   &lt;NA&gt;     8    29    NA    10    19   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#   4:    FW1   1871     NA      KEK   &lt;NA&gt;     7    19    NA     7    12   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#   5:    NY2   1872     NA      NNA   &lt;NA&gt;     3    56    NA    34    20   &lt;NA&gt;   &lt;NA&gt;      N   &lt;NA&gt;</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#  ---                                                                                               </span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co"># 145:    ANA   2000     AL      ANA      W     3   162    81    82    80      N      N      N      N</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co"># 146:    ARI   1999     NL      ARI      W     1   162    81   100    62      Y      N      N      N</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co"># 147:    MIL   1999     NL      MIL      C     5   161    80    74    87      N      N      N      N</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co"># 148:    TBA   2009     AL      </span><span class="al">TBD</span><span class="co">      E     3   162    81    84    78      N      N      N      N</span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co"># 149:    MIA   2017     NL      FLA      E     2   162    78    77    85      N      N      N      N</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#          R    AB     H   X2B   X3B    HR    BB    SO    SB    CS   HBP    SF    RA    ER   ERA</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#      &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;int&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt;</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#   1:   831  3515  1128   167    51    15    33    52    93    37    NA    NA   343   152  1.87</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#   2:   302  1196   323    52    21    10    60    22    69    21    NA    NA   241    77  2.76</span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#   3:   249  1186   328    35    40     7    26    25    18     8    NA    NA   341   116  4.11</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="co">#   4:   137   746   178    19     8     2    33     9    16     4    NA    NA   243    97  5.17</span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a><span class="co">#   5:   523  2426   670    87    14     4    58    52    59    22    NA    NA   362   172  3.02</span></span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a><span class="co">#  ---                                                                                          </span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a><span class="co"># 145:   864  5628  1574   309    34   236   608  1024    93    52    47    43   869   805  5.00</span></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a><span class="co"># 146:   908  5658  1566   289    46   216   588  1045   137    39    48    60   676   615  3.77</span></span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a><span class="co"># 147:   815  5582  1524   299    30   165   658  1065    81    33    55    51   886   813  5.07</span></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a><span class="co"># 148:   803  5462  1434   297    36   199   642  1229   194    61    49    45   754   686  4.33</span></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="co"># 149:   778  5602  1497   271    31   194   486  1282    91    30    67    41   822   772  4.82</span></span>
+<span id="cb12-28"><a href="#cb12-28" tabindex="-1"></a><span class="co">#         CG   SHO    SV IPouts    HA   HRA   BBA   SOA     E    DP    FP                    name</span></span>
+<span id="cb12-29"><a href="#cb12-29" tabindex="-1"></a><span class="co">#      &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt;                  &lt;char&gt;</span></span>
+<span id="cb12-30"><a href="#cb12-30" tabindex="-1"></a><span class="co">#   1:    60    10    17   2196   751     2    33   110   483    56 0.870    Boston Red Stockings</span></span>
+<span id="cb12-31"><a href="#cb12-31" tabindex="-1"></a><span class="co">#   2:    25     0     1    753   308     6    28    22   229    16 0.829 Chicago White Stockings</span></span>
+<span id="cb12-32"><a href="#cb12-32" tabindex="-1"></a><span class="co">#   3:    23     0     0    762   346    13    53    34   234    15 0.818  Cleveland Forest Citys</span></span>
+<span id="cb12-33"><a href="#cb12-33" tabindex="-1"></a><span class="co">#   4:    19     1     0    507   261     5    21    17   163     8 0.803    Fort Wayne Kekiongas</span></span>
+<span id="cb12-34"><a href="#cb12-34" tabindex="-1"></a><span class="co">#   5:    54     3     1   1536   622     2    33    46   323    33 0.868        New York Mutuals</span></span>
+<span id="cb12-35"><a href="#cb12-35" tabindex="-1"></a><span class="co">#  ---                                                                                           </span></span>
+<span id="cb12-36"><a href="#cb12-36" tabindex="-1"></a><span class="co"># 145:     5     3    46   4344  1534   228   662   846   134   182 0.978          Anaheim Angels</span></span>
+<span id="cb12-37"><a href="#cb12-37" tabindex="-1"></a><span class="co"># 146:    16     9    42   4402  1387   176   543  1198   104   132 0.983    Arizona Diamondbacks</span></span>
+<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a><span class="co"># 147:     2     5    40   4328  1618   213   616   987   127   146 0.979       Milwaukee Brewers</span></span>
+<span id="cb12-39"><a href="#cb12-39" tabindex="-1"></a><span class="co"># 148:     3     5    41   4282  1421   183   515  1125    98   135 0.983          Tampa Bay Rays</span></span>
+<span id="cb12-40"><a href="#cb12-40" tabindex="-1"></a><span class="co"># 149:     1     7    34   4328  1450   193   627  1202    73   156 0.988           Miami Marlins</span></span>
+<span id="cb12-41"><a href="#cb12-41" tabindex="-1"></a><span class="co">#                              park attendance   BPF   PPF teamIDBR teamIDlahman45 teamIDretro</span></span>
+<span id="cb12-42"><a href="#cb12-42" tabindex="-1"></a><span class="co">#                            &lt;char&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;fctr&gt;         &lt;fctr&gt;      &lt;fctr&gt;</span></span>
+<span id="cb12-43"><a href="#cb12-43" tabindex="-1"></a><span class="co">#   1:          South End Grounds I         NA   103    96      BOS            BS1         BS1</span></span>
+<span id="cb12-44"><a href="#cb12-44" tabindex="-1"></a><span class="co">#   2:      Union Base-Ball Grounds         NA   104   102      CHI            CH1         CH1</span></span>
+<span id="cb12-45"><a href="#cb12-45" tabindex="-1"></a><span class="co">#   3: National Association Grounds         NA    96   100      CLE            CL1         CL1</span></span>
+<span id="cb12-46"><a href="#cb12-46" tabindex="-1"></a><span class="co">#   4:               Hamilton Field         NA   101   107      KEK            FW1         FW1</span></span>
+<span id="cb12-47"><a href="#cb12-47" tabindex="-1"></a><span class="co">#   5:     Union Grounds (Brooklyn)         NA    93    92      NYU            NY2         NY2</span></span>
+<span id="cb12-48"><a href="#cb12-48" tabindex="-1"></a><span class="co">#  ---                                                                                        </span></span>
+<span id="cb12-49"><a href="#cb12-49" tabindex="-1"></a><span class="co"># 145:   Edison International Field    2066982   102   103      ANA            ANA         ANA</span></span>
+<span id="cb12-50"><a href="#cb12-50" tabindex="-1"></a><span class="co"># 146:            Bank One Ballpark    3019654   101   101      ARI            ARI         ARI</span></span>
+<span id="cb12-51"><a href="#cb12-51" tabindex="-1"></a><span class="co"># 147:               County Stadium    1701796    99    99      MIL            ML4         MIL</span></span>
+<span id="cb12-52"><a href="#cb12-52" tabindex="-1"></a><span class="co"># 148:              Tropicana Field    1874962    98    97      TBR            TBA         TBA</span></span>
+<span id="cb12-53"><a href="#cb12-53" tabindex="-1"></a><span class="co"># 149:                 Marlins Park    1583014    93    93      MIA            FLO         MIA</span></span></code></pre></div>
+<p>Tenga en cuenta que este enfoque, por supuesto, se puede combinar con
+<code>.SDcols</code> para devolver solo partes de
+<code>data.table</code> para cada <code>.SD</code> (con la salvedad de
+que <code>.SDcols</code> debe fijarse en los distintos
+subconjuntos).</p>
+<p><em>NB</em>: <code>.SD[1L]</code> está optimizado actualmente por las
+rutinas internas de <code>data.table</code> <a href="https://Rdatatable.gitlab.io/data.table/library/data.table/html/datatable-optimize.html"><em><code>GForce</code></em></a>
+(<a href="https://stackoverflow.com/questions/22137591/about-gforce-in-data-table-1-9-2">ver
+también</a>) que acelera enormemente las operaciones agrupadas más
+comunes como <code>sum</code> o <code>mean</code> - vea
+<code>?GForce</code> para más detalles y esté atento o contacte al
+soporte para solicitudes de mejoras de características para
+actualizaciones en este frente: <a href="https://github.com/Rdatatable/data.table/issues/735">1</a>, <a href="https://github.com/Rdatatable/data.table/issues/2778">2</a>, <a href="https://github.com/Rdatatable/data.table/issues/523">3</a>, <a href="https://github.com/Rdatatable/data.table/issues/971">4</a>, <a href="https://github.com/Rdatatable/data.table/issues/1197">5</a>, <a href="https://github.com/Rdatatable/data.table/issues/1414">6</a></p>
+</div>
+<div id="regresión-agrupada" class="section level2">
+<h2>Regresión agrupada</h2>
+<p>Volviendo a la pregunta anterior sobre la relación entre
+<code>ERA</code> y <code>W</code>, supongamos que esperamos que esta
+relación varíe según el equipo (es decir, hay una pendiente diferente
+para cada equipo). Podemos volver a ejecutar fácilmente esta regresión
+para explorar la heterogeneidad en esta relación de la siguiente manera
+(observando que los errores estándar de este enfoque son generalmente
+incorrectos – la especificación <code>ERA ~ W*teamID</code> será mejor –
+este enfoque es más fácil de leer y los <em>coeficientes</em> son
+correctos):</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Overall coefficient for comparison</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>overall_coef <span class="ot">=</span> Pitching[ , <span class="fu">coef</span>(<span class="fu">lm</span>(ERA <span class="sc">~</span> W))[<span class="st">&#39;W&#39;</span>]]</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co"># use the .N &gt; 20 filter to exclude teams with few observations</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>Pitching[ , <span class="cf">if</span> (.N <span class="sc">&gt;</span> <span class="dv">20</span><span class="dt">L</span>) .(<span class="at">w_coef =</span> <span class="fu">coef</span>(<span class="fu">lm</span>(ERA <span class="sc">~</span> W))[<span class="st">&#39;W&#39;</span>]), by <span class="ot">=</span> teamID</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>          ][ , <span class="fu">hist</span>(w_coef, <span class="dv">20</span><span class="dt">L</span>, <span class="at">las =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>                    <span class="at">xlab =</span> <span class="st">&#39;Fitted Coefficient on W&#39;</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>                    <span class="at">ylab =</span> <span class="st">&#39;Number of Teams&#39;</span>, <span class="at">col =</span> <span class="st">&#39;darkgreen&#39;</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>                    <span class="at">main =</span> <span class="st">&#39;Team-Level Distribution</span><span class="sc">\n</span><span class="st">Win Coefficients on ERA&#39;</span>)]</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> overall_coef, <span class="at">lty =</span> <span class="dv">2</span><span class="dt">L</span>, <span class="at">col =</span> <span class="st">&#39;red&#39;</span>)</span></code></pre></div>
+<div class="figure">
+<img role="img" aria-label="A histogram depicting the distribution of fitted coefficients. It is vaguely bell-shaped and concentrated around -.2" src="data:image/png;base64,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" alt="A histogram depicting the distribution of fitted coefficients. It is vaguely bell-shaped and concentrated around -.2" width="100%" />
+<p class="caption">
+A histogram depicting the distribution of fitted coefficients. It is
+vaguely bell-shaped and concentrated around -.2
+</p>
+</div>
+<p>Si bien es cierto que existe una buena cantidad de heterogeneidad,
+hay una clara concentración en torno al valor general observado.</p>
+<p>¡Lo anterior es solo una breve introducción del poder de
+<code>.SD</code> para facilitar un código bonito y eficiente en
+<code>data.table</code>!</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

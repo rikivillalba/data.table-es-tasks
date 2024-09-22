@@ -1,0 +1,201 @@
+---
+title: "Benchmarking data.table"
+date: "2024-09-21"
+output:
+  markdown::html_format:
+    options:
+      toc: true
+      number_sections: true
+    meta:
+      css: [default, css/toc.css]
+vignette: >
+  %\VignetteIndexEntry{Benchmarking data.table}
+  %\VignetteEngine{knitr::knitr}
+  \usepackage[utf8]{inputenc}
+---
+
+<style>
+h2 {
+    font-size: 20px;
+}
+</style>
+
+Este documento tiene como objetivo orientar sobre la medición del rendimiento de
+`data.table`. Un único lugar para documentar las mejores prácticas y las trampas
+que se deben evitar.
+
+# fread: borrar cachés
+
+Lo ideal es que cada llamada a `fread` se ejecute en una sesión nueva con los
+siguientes comandos antes de la ejecución de R. Esto borra el archivo de caché
+del SO en la RAM y la caché del disco duro.
+
+```sh
+free -g
+sudo sh -c 'echo 3 >/proc/sys/vm/drop_caches'
+sudo lshw -class disk
+sudo hdparm -t /dev/sda
+```
+
+Al comparar `fread` con soluciones que no sean de R, tenga en cuenta que R
+requiere que los valores de las columnas de caracteres se agreguen a la _caché
+de cadenas global de R_. Esto lleva tiempo al leer datos, pero las operaciones
+posteriores se benefician porque las cadenas de caracteres ya se han almacenado
+en caché. En consecuencia, además de cronometrar tareas aisladas (como `fread`
+solo), es una buena idea comparar el tiempo total de una secuencia de tareas de
+punta a punta, como leer datos, manipularlos y producir el resultado final.
+
+# subconjunto: umbral para la optimización de índices en consultas compuestas
+
+La optimización de índices para consultas de filtro compuestas no se utilizará
+cuando el producto cruzado de los elementos proporcionados para filtrar supere
+los 1e4 elementos.
+
+```r
+DT = data.table(V1=1:10, V2=1:10, V3=1:10, V4=1:10)
+setindex(DT)
+v = c(1L, rep(11L, 9))
+length(v)^4               # cross product of elements in filter
+#[1] 10000                # <= 10000
+DT[V1 %in% v & V2 %in% v & V3 %in% v & V4 %in% v, verbose=TRUE]
+#Optimized subsetting with index 'V1__V2__V3__V4'
+#on= matches existing index, using index
+#Starting bmerge ...done in 0.000sec
+#...
+v = c(1L, rep(11L, 10))
+length(v)^4               # cross product of elements in filter
+#[1] 14641                # > 10000
+DT[V1 %in% v & V2 %in% v & V3 %in% v & V4 %in% v, verbose=TRUE]
+#Subsetting optimization disabled because the cross-product of RHS values exceeds 1e4, causing memory problems.
+#...
+```
+
+# subconjunto: evaluación comparativa con reconocimiento de índices
+
+Para mayor comodidad, `data.table` crea automáticamente un índice en los campos
+que utiliza para crear subconjuntos de datos. Esto agregará cierta sobrecarga al
+primer subconjunto en campos específicos, pero reduce en gran medida el tiempo
+para consultar esas columnas en ejecuciones posteriores. Al medir la velocidad,
+la mejor manera es medir la creación y la consulta de índices utilizando un
+índice por separado. Con estos tiempos, es fácil decidir cuál es la estrategia
+óptima para su caso de uso. Para controlar el uso del índice, utilice las
+siguientes opciones:
+
+```r
+options(datatable.auto.index=TRUE)
+options(datatable.use.index=TRUE)
+```
+
+=====- `use.index=FALSE` forzará a la consulta a no usar índices incluso si
+existen, pero las claves existentes se siguen usando para la optimización.=====
+=====- `auto.index=FALSE` deshabilita la creación automática de índices cuando
+se crea un subconjunto en datos no indexados, pero si los índices se crearon
+antes de que se estableciera esta opción, o explícitamente al llamar a
+`setindex`, se seguirán usando para la optimización.=====
+
+Otras dos opciones controlan la optimización globalmente, incluido el uso de
+índices:
+```r
+options(datatable.optimize=2L)
+options(datatable.optimize=3L)
+```
+`options(datatable.optimize=2L)` desactivará la optimización de subconjuntos por
+completo, mientras que `options(datatable.optimize=3L)` la volverá a activar.
+Esas opciones afectan a muchas más optimizaciones y, por lo tanto, no se deben
+usar cuando solo se necesita el control de índices. Lea más en
+`?datatable.optimize`.
+
+# Operaciones _por referencia_
+
+Al evaluar las funciones `set*`, solo tiene sentido medir la primera ejecución.
+Estas funciones actualizan su entrada por referencia, por lo que las ejecuciones
+posteriores utilizarán el `data.table` ya procesado, lo que sesgará los
+resultados.
+
+Para proteger su `data.table` de ser actualizado por operaciones de referencia,
+puede utilizar las funciones `copy` o `data.table:::shallow`. Tenga en cuenta
+que `copy` puede ser muy costoso, ya que necesita duplicar el objeto completo.
+Es poco probable que queramos incluir el tiempo de duplicación en el tiempo de
+la tarea real que estamos evaluando.
+
+# Intente evaluar los procesos atómicos
+
+Si su evaluación comparativa está destinada a publicarse, será mucho más
+esclarecedor si la divide para medir el tiempo de los procesos atómicos. De esta
+manera, sus lectores pueden ver cuánto tiempo se dedicó a leer los datos de la
+fuente, limpiarlos, transformarlos realmente y exportar los resultados. Por
+supuesto, si su evaluación comparativa está destinada a presentar un _flujo de
+trabajo de extremo a extremo_, entonces tiene mucho sentido presentar el tiempo
+general. Sin embargo, separar el tiempo de los pasos individuales es útil para
+comprender qué pasos son los principales cuellos de botella de un flujo de
+trabajo. Existen otros casos en los que la evaluación comparativa atómica puede
+no ser deseable, por ejemplo, cuando se lee un archivo csv y luego se realiza
+una agrupación. R requiere que se complete la caché de cadenas global de R, lo
+que agrega una sobrecarga adicional al importar datos de caracteres a una sesión
+de R. Por otro lado, la caché de cadenas global puede acelerar procesos como la
+agrupación. En tales casos, al comparar R con otros lenguajes, puede ser útil
+incluir el tiempo total.
+
+# evitar la coerción de clases
+
+A menos que esto sea lo que realmente desea medir, debe preparar objetos de
+entrada de la clase esperada para cada herramienta que esté evaluando.
+
+# Evite `microbenchmark(..., times=100)`
+
+Repetir una evaluación comparativa muchas veces generalmente no brinda la imagen
+más clara para las herramientas de procesamiento de datos. Por supuesto, tiene
+mucho sentido para cálculos más atómicos, pero esta no es una buena
+representación de la forma más común en que se usarán realmente estas
+herramientas, es decir, para tareas de procesamiento de datos, que consisten en
+lotes de transformaciones proporcionadas secuencialmente, cada una de las cuales
+se ejecuta una vez. Matt dijo una vez:
+
+> Soy muy cauteloso con las evaluaciones comparativas medidas en cualquier
+> tiempo menor a 1 segundo. Prefiero mucho 10 segundos o más para una sola
+> ejecución, lograda al aumentar el tamaño de los datos. Un recuento de
+> repeticiones de 500 hace sonar las alarmas. 3 a 5 ejecuciones deberían ser
+> suficientes para convencer con datos más grandes. La sobrecarga de llamadas y
+> el tiempo para GC afectan las inferencias a esta escala muy pequeña.
+
+Esto es muy válido. Cuanto menor sea la medición de tiempo, mayor será el ruido
+relativamente. Ruido generado por el envío de métodos, inicialización de
+paquetes/clases, etc. El punto de referencia debe centrarse principalmente en
+casos de uso reales.
+
+# Procesamiento multihilo
+
+Uno de los principales factores que probablemente afecten los tiempos es la
+cantidad de hilos disponibles para su sesión R. En versiones recientes de
+`data.table`, algunas funciones están paralelizadas. Puede controlar la cantidad
+de hilos que desea utilizar con `setDTthreads`.
+
+```r
+setDTthreads(0)    # use all available cores (default)
+getDTthreads()     # check how many cores are currently used
+```
+
+# Dentro de un bucle, es preferible usar `set` en lugar de `:=`
+
+A menos que esté utilizando un índice al realizar una _subasignación por
+referencia_, debería preferir la función `set`, que no impone una sobrecarga de
+la llamada al método `[.data.table`.
+
+```r
+DT = data.table(a=3:1, b=letters[1:3])
+setindex(DT, a)
+
+# for (...) {                 # imagine loop here
+
+  DT[a==2L, b := "z"]         # sub-assign by reference, uses index
+  DT[, d := "z"]              # not sub-assign by reference, not uses index and adds overhead of `[.data.table`
+  set(DT, j="d", value="z")   # no `[.data.table` overhead, but no index yet, till #1196
+
+# }
+```
+
+# Dentro de un bucle, es preferible `setDT` en lugar de `data.table()`
+
+Al presente, `data.table()` tiene una sobrecarga, por lo tanto, dentro de los
+bucles es preferible utilizar `as.data.table()` o `setDT()` en una lista válida.
+
