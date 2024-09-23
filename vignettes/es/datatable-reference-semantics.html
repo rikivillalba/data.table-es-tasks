@@ -145,17 +145,10 @@ section.footnotes::before {
 <div class="date"><h3>2024-09-23</h3></div>
 </div>
 <div class="body">
-<p>Esta viñeta analiza la semántica de referencia de <em>data.table</em>, que permite
-<em>agregar/actualizar/eliminar</em> columnas de una <em>data.table por referencia</em>, y
-también combinarlas con <code>i</code> y <code>by</code>. Está dirigida a aquellos que ya están
-familiarizados con la sintaxis de <em>data.table</em>, su forma general, cómo crear
-subconjuntos de filas en <code>i</code>, seleccionar y calcular columnas, y realizar
-agregaciones por grupo. Si no está familiarizado con estos conceptos, lea
-primero la viñeta <em>“Introducción a data.table”</em>.</p>
+<p>Esta viñeta analiza la semántica de referencia de <em>data.table</em>, que permite <em>agregar/actualizar/eliminar</em> columnas de una <em>data.table por referencia</em>, y también combinarlas con <code>i</code> y <code>by</code>. Está dirigida a aquellos que ya están familiarizados con la sintaxis de <em>data.table</em>, su forma general, cómo crear subconjuntos de filas en <code>i</code>, seleccionar y calcular columnas, y realizar agregaciones por grupo. Si no está familiarizado con estos conceptos, lea primero la viñeta <em>“Introducción a data.table”</em>.</p>
 <hr />
 <h2 id="data">Datos</h2>
-<p>Utilizaremos los mismos datos de <code>flights</code> que en la viñeta <em>“Introducción a
-data.table”</em>.</p>
+<p>Utilizaremos los mismos datos de <code>flights</code> que en la viñeta <em>“Introducción a data.table”</em>.</p>
 <pre><code class="language-r">flights &lt;- fread(&quot;flights14.csv&quot;)
 flights
 #          year month   day dep_delay arr_delay carrier origin   dest air_time distance  hour
@@ -176,20 +169,21 @@ dim(flights)
 </code></pre>
 <h2 id="introducci-n">Introducción</h2>
 <p>En esta viñeta, vamos a</p>
-<p>=====1. primero, analizar brevemente la semántica de referencia y observar las
-dos formas diferentes en las que se puede utilizar el operador <code>:=</code>=====</p>
-<p>=====2. luego, ver cómo podemos <em>agregar/actualizar/eliminar</em> columnas <em>por
-referencia</em> en <code>j</code> usando el operador <code>:=</code> y cómo combinarlo con <code>i</code> y
-<code>by</code>.=====</p>
-<p>=====3. y finalmente veremos el uso de <code>:=</code> por sus <em>efectos secundarios</em> y cómo
-podemos evitar los efectos secundarios usando <code>copy()</code>.=====</p>
+<ol>
+<li>
+<p>primero, analizar brevemente la semántica de referencia y observar las dos formas diferentes en las que se puede utilizar el operador <code>:=</code></p>
+</li>
+<li>
+<p>luego, ver cómo podemos <em>agregar/actualizar/eliminar</em> columnas <em>por referencia</em> en <code>j</code> usando el operador <code>:=</code> y cómo combinarlo con <code>i</code> y <code>by</code>.</p>
+</li>
+<li>
+<p>y finalmente veremos el uso de <code>:=</code> por sus <em>efectos secundarios</em> y cómo podemos evitar los efectos secundarios usando <code>copy()</code>.</p>
+</li>
+</ol>
 <h2 id="1-sem-ntica-de-referencia">1. Semántica de referencia</h2>
-<p>Todas las operaciones que hemos visto hasta ahora en la viñeta anterior dieron
-como resultado un nuevo conjunto de datos. Veremos cómo <em>agregar</em> nuevas
-columnas, <em>actualizar</em> o <em>eliminar</em> columnas existentes en los datos originales.</p>
+<p>Todas las operaciones que hemos visto hasta ahora en la viñeta anterior dieron como resultado un nuevo conjunto de datos. Veremos cómo <em>agregar</em> nuevas columnas, <em>actualizar</em> o <em>eliminar</em> columnas existentes en los datos originales.</p>
 <h3 id="a-antecedentes">a) Antecedentes</h3>
-<p>Antes de analizar la <em>semántica de referencia</em>, considere el <em>data.frame</em> que se
-muestra a continuación:</p>
+<p>Antes de analizar la <em>semántica de referencia</em>, considere el <em>data.frame</em> que se muestra a continuación:</p>
 <pre><code class="language-r">DF = data.frame(ID = c(&quot;b&quot;,&quot;b&quot;,&quot;b&quot;,&quot;a&quot;,&quot;a&quot;,&quot;c&quot;), a = 1:6, b = 7:12, c = 13:18)
 DF
 #   ID a  b  c
@@ -205,30 +199,14 @@ DF
 # or
 DF$c[DF$ID == &quot;b&quot;] &lt;- 15:13 # (2) -- subassign in column 'c'
 </code></pre>
-<p>Tanto (1) como (2) dieron como resultado una copia profunda de todo el
-data.frame en versiones de <code>R</code> <code>&lt; 3.1</code>. <a href="https://stackoverflow.com/q/23898969/559784">Se copió más de una
-vez</a>. Para mejorar el rendimiento
-evitando estas copias redundantes, <em>data.table</em> utilizó el <a href="https://stackoverflow.com/q/7033106/559784">operador <code>:=</code>
-disponible pero no utilizado en R</a>.</p>
-<p>Se realizaron grandes mejoras de rendimiento en <code>R v3.1</code>, como resultado de lo
-cual solo se realiza una copia <em>superficial</em> para (1) y no una copia <em>profunda</em>.
-Sin embargo, para (2), todavía se realiza una copia <em>profunda</em> de toda la
-columna incluso en <code>R v3.1+</code>. Esto significa que cuantas más columnas se
-subasignan en la <em>misma consulta</em>, más copias <em>profundas</em> realiza R.</p>
+<p>Tanto (1) como (2) dieron como resultado una copia profunda de todo el data.frame en versiones de <code>R</code> <code>&lt; 3.1</code>. <a href="https://stackoverflow.com/q/23898969/559784">Se copió más de una vez</a>. Para mejorar el rendimiento evitando estas copias redundantes, <em>data.table</em> utilizó el <a href="https://stackoverflow.com/q/7033106/559784">operador <code>:=</code> disponible pero no utilizado en R</a>.</p>
+<p>Se realizaron grandes mejoras de rendimiento en <code>R v3.1</code>, como resultado de lo cual solo se realiza una copia <em>superficial</em> para (1) y no una copia <em>profunda</em>. Sin embargo, para (2), todavía se realiza una copia <em>profunda</em> de toda la columna incluso en <code>R v3.1+</code>. Esto significa que cuantas más columnas se subasignan en la <em>misma consulta</em>, más copias <em>profundas</em> realiza R.</p>
 <h4 id="copia-superficial-vs-copia-profunda">Copia <em>superficial</em> vs. copia <em>profunda</em></h4>
-<p>Una copia <em>superficial</em> es simplemente una copia del vector de punteros de
-columna (que corresponden a las columnas en un <em>data.frame</em> o <em>data.table</em>). Los
-datos reales no se copian físicamente en la memoria.</p>
-<p>Una copia <em>profunda</em>, por otro lado, copia todos los datos a otra ubicación en
-la memoria.</p>
-<p>Al crear un subconjunto de una <em>data.table</em> utilizando <code>i</code> (por ejemplo,
-<code>DT[1:10]</code>), se realiza una copia <em>profunda</em>. Sin embargo, cuando no se
-proporciona <code>i</code> o es igual a <code>TRUE</code>, se realiza una copia <em>superficial</em>.</p>
+<p>Una copia <em>superficial</em> es simplemente una copia del vector de punteros de columna (que corresponden a las columnas en un <em>data.frame</em> o <em>data.table</em>). Los datos reales no se copian físicamente en la memoria.</p>
+<p>Una copia <em>profunda</em>, por otro lado, copia todos los datos a otra ubicación en la memoria.</p>
+<p>Al crear un subconjunto de una <em>data.table</em> utilizando <code>i</code> (por ejemplo, <code>DT[1:10]</code>), se realiza una copia <em>profunda</em>. Sin embargo, cuando no se proporciona <code>i</code> o es igual a <code>TRUE</code>, se realiza una copia <em>superficial</em>.</p>
 <h1></h1>
-<p>Con el operador <code>:=</code> de <em>data.table</em>, no se realiza absolutamente ninguna copia
-<em>tanto en (1) como en (2)</em>, independientemente de la versión de R que esté
-utilizando. Esto se debe a que el operador <code>:=</code> actualiza las columnas de
-<em>data.table</em> <em>en el lugar</em> (por referencia).</p>
+<p>Con el operador <code>:=</code> de <em>data.table</em>, no se realiza absolutamente ninguna copia <em>tanto en (1) como en (2)</em>, independientemente de la versión de R que esté utilizando. Esto se debe a que el operador <code>:=</code> actualiza las columnas de <em>data.table</em> <em>en el lugar</em> (por referencia).</p>
 <h3 id="b-el-operador">b) El operador <code>:=</code></h3>
 <p>Se puede utilizar en <code>j</code> de dos maneras:</p>
 <p>(a) La forma <code>LHS := RHS</code></p>
@@ -244,30 +222,24 @@ DT[, colA := valA]
           ...
 )]
 </code></pre>
-<p>Tenga en cuenta que el código anterior explica cómo se puede utilizar <code>:=</code>. No
-son ejemplos funcionales. Comenzaremos a utilizarlos en la data.table <code>flights</code>
-a partir de la siguiente sección. (N. de T.: <em>LHS</em> es sigla de <em>Left Hand Side</em>,
-<em>lado izquierdo</em> de la expresión. <em>RHS</em> es <em>Right Hand Side</em>, <em>lado derecho</em>).</p>
+<p>Tenga en cuenta que el código anterior explica cómo se puede utilizar <code>:=</code>. No son ejemplos funcionales. Comenzaremos a utilizarlos en la data.table <code>flights</code> a partir de la siguiente sección. (N. de T.: <em>LHS</em> es sigla de <em>Left Hand Side</em>, <em>lado izquierdo</em> de la expresión. <em>RHS</em> es <em>Right Hand Side</em>, <em>lado derecho</em>).</p>
 <h1></h1>
-<p>=====* En (a), <code>LHS</code> toma un vector de caracteres de nombres de columnas y <code>RHS</code>
-una <em>lista de valores</em>. <code>RHS</code> solo necesita ser una <code>lista</code>, independientemente
-de cómo se genere (por ejemplo, utilizando <code>lapply()</code>, <code>list()</code>, <code>mget()</code>,
-<code>mapply()</code>, etc.). Esta forma suele ser fácil de programar y es particularmente
-útil cuando no se conocen de antemano las columnas a las que se deben asignar
-valores.=====</p>
-<p>=====* Por otro lado, (b) es útil si quieres anotar algunos comentarios para más
-tarde.=====</p>
 <ul>
-<li>El resultado se devuelve de forma <em>invisible</em>.</li>
+<li>
+<p>En (a), <code>LHS</code> toma un vector de caracteres de nombres de columnas y <code>RHS</code> una <em>lista de valores</em>. <code>RHS</code> solo necesita ser una <code>lista</code>, independientemente de cómo se genere (por ejemplo, utilizando <code>lapply()</code>, <code>list()</code>, <code>mget()</code>, <code>mapply()</code>, etc.). Esta forma suele ser fácil de programar y es particularmente útil cuando no se conocen de antemano las columnas a las que se deben asignar valores.</p>
+</li>
+<li>
+<p>Por otro lado, (b) es útil si quieres anotar algunos comentarios para más tarde.</p>
+</li>
+<li>
+<p>El resultado se devuelve de forma <em>invisible</em>.</p>
+</li>
+<li>
+<p>Dado que <code>:=</code> está disponible en <code>j</code>, podemos combinarlo con las operaciones <code>i</code> y <code>by</code> tal como las operaciones de agregación que vimos en la viñeta anterior.</p>
+</li>
 </ul>
-<p>=====* Dado que <code>:=</code> está disponible en <code>j</code>, podemos combinarlo con las
-operaciones <code>i</code> y <code>by</code> tal como las operaciones de agregación que vimos en la
-viñeta anterior.=====</p>
 <h1></h1>
-<p>En las dos formas de <code>:=</code> que se muestran arriba, tenga en cuenta que no
-asignamos el resultado a una variable, porque no es necesario. La entrada
-<em>data.table</em> se modifica por referencia. Veamos algunos ejemplos para entender
-lo que queremos decir con esto.</p>
+<p>En las dos formas de <code>:=</code> que se muestran arriba, tenga en cuenta que no asignamos el resultado a una variable, porque no es necesario. La entrada <em>data.table</em> se modifica por referencia. Veamos algunos ejemplos para entender lo que queremos decir con esto.</p>
 <p>Para el resto de la viñeta, trabajaremos con la data.table <em>flights</em>.</p>
 <h2 id="2-agregar-actualizar-eliminar-columnas-por-referencia">2. Agregar/actualizar/eliminar columnas <em>por referencia</em></h2>
 <h3 id="ref-j">a) Añadir columnas por referencia</h3>
@@ -323,22 +295,23 @@ head(flights)
 </code></pre>
 <h4 id="tenga-en-cuenta-que">Tenga en cuenta que</h4>
 <ul>
-<li>No tuvimos que volver a asignar el resultado a <code>flights</code>.</li>
+<li>
+<p>No tuvimos que volver a asignar el resultado a <code>flights</code>.</p>
+</li>
+<li>
+<p>La data.table <code>flights</code> ahora contiene las dos columnas recién añadidas. Esto es lo que queremos decir con <em>añadidas por referencia</em>.</p>
+</li>
+<li>
+<p>Usamos la forma funcional para poder agregar comentarios al costado para explicar lo que hace el cálculo. También puede ver la forma <code>LHS := RHS</code> (comentada).</p>
+</li>
 </ul>
-<p>=====* La data.table <code>flights</code> ahora contiene las dos columnas recién añadidas.
-Esto es lo que queremos decir con <em>añadidas por referencia</em>.=====</p>
-<p>=====* Usamos la forma funcional para poder agregar comentarios al costado para
-explicar lo que hace el cálculo. También puede ver la forma <code>LHS := RHS</code>
-(comentada).=====</p>
 <h3 id="ref-ij">b) Actualizar algunas filas de columnas por referencia - <em>sub-asignar</em> por referencia</h3>
-<p>Echemos un vistazo a todas las horas (columna <code>hour</code>) disponibles en la
-data.table <code>flights</code>:</p>
+<p>Echemos un vistazo a todas las horas (columna <code>hour</code>) disponibles en la data.table <code>flights</code>:</p>
 <pre><code class="language-r"># get all 'hours' in flights
 flights[, sort(unique(hour))]
 #  [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 </code></pre>
-<p>Vemos que hay un total de <code>25</code> valores únicos en los datos. Parece que hay tanto
-<em>0</em> como <em>24</em> horas. Reemplacemos <em>24</em> por <em>0</em>.</p>
+<p>Vemos que hay un total de <code>25</code> valores únicos en los datos. Parece que hay tanto <em>0</em> como <em>24</em> horas. Reemplacemos <em>24</em> por <em>0</em>.</p>
 <h4 id="reemplace-aquellas-filas-donde-hour-24-con-el-valor-0">– Reemplace aquellas filas donde <code>hour == 24</code> con el valor <code>0</code></h4>
 <pre><code class="language-r"># subassign by reference
 flights[hour == 24L, hour := 0L]
@@ -369,16 +342,16 @@ flights[hour == 24L, hour := 0L]
 # 253315: 401.6000    11
 # 253316: 359.4545    -4
 </code></pre>
-<p>=====* Podemos usar <code>i</code> junto con <code>:=</code> en <code>j</code> de la misma manera que ya hemos
-visto en la viñeta <em>“Introducción a data.table”</em>.=====</p>
-<p>=====* La columna <code>hour</code> se reemplaza con <code>0</code> solo en aquellos <em>índices de fila</em>
-donde la condición <code>hour == 24L</code> especificada en <code>i</code> se evalúa como <code>TRUE</code>
-(verdadero).=====</p>
-<p>=====* <code>:=</code> devuelve el resultado de forma invisible. A veces puede ser
-necesario ver el resultado después de la asignación. Podemos lograrlo agregando
-un <code>[]</code> vacío al final de la consulta como se muestra a continuación:=====</p>
-<pre><code>``` r
-flights[hour == 24L, hour := 0L][]
+<ul>
+<li>
+<p>Podemos usar <code>i</code> junto con <code>:=</code> en <code>j</code> de la misma manera que ya hemos visto en la viñeta <em>“Introducción a data.table”</em>.</p>
+</li>
+<li>
+<p>La columna <code>hour</code> se reemplaza con <code>0</code> solo en aquellos <em>índices de fila</em> donde la condición <code>hour == 24L</code> especificada en <code>i</code> se evalúa como <code>TRUE</code> (verdadero).</p>
+</li>
+<li>
+<p><code>:=</code> devuelve el resultado de forma invisible. A veces puede ser necesario ver el resultado después de la asignación. Podemos lograrlo agregando un <code>[]</code> vacío al final de la consulta como se muestra a continuación:</p>
+<pre><code class="language-r">flights[hour == 24L, hour := 0L][]
 # Índice: &lt;hour&gt;
 #          year month   day dep_delay arr_delay carrier origin   dest air_time distance  hour
 #         &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;int&gt;     &lt;int&gt;  &lt;char&gt; &lt;char&gt; &lt;char&gt;    &lt;int&gt;    &lt;int&gt; &lt;int&gt;
@@ -406,8 +379,9 @@ flights[hour == 24L, hour := 0L][]
 # 253314: 311.5663     8
 # 253315: 401.6000    11
 # 253316: 359.4545    -4
-```
 </code></pre>
+</li>
+</ul>
 <h1></h1>
 <p>Veamos todas las <em>horas</em> para verificar.</p>
 <pre><code class="language-r"># check again for '24'
@@ -415,8 +389,7 @@ flights[, sort(unique(hour))]
 #  [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
 </code></pre>
 <h4 id="update-by-reference-question">Ejercicio:</h4>
-<p>¿Cuál es la diferencia entre <code>flights[hour == 24L, hour := 0L]</code> y <code>flights[hour == 24L][, hour := 0L]</code>? Una pista: El último necesita una asignación (<code>&lt;-</code>) si
-desea utilizar el resultado más adelante.</p>
+<p>¿Cuál es la diferencia entre <code>flights[hour == 24L, hour := 0L]</code> y <code>flights[hour == 24L][, hour := 0L]</code>? Una pista: El último necesita una asignación (<code>&lt;-</code>) si desea utilizar el resultado más adelante.</p>
 <p>Si no puedes resolverlo, echa un vistazo a la sección <code>Nota</code> de <code>?&quot;:=&quot;</code>.</p>
 <h3 id="c-eliminar-columna-por-referencia">c) Eliminar columna por referencia</h3>
 <h4 id="eliminar-la-columna-delay">– Eliminar la columna <code>delay</code></h4>
@@ -462,23 +435,22 @@ head(flights)
 # flights[, `:=`(delay = NULL)]
 </code></pre>
 <h4 id="delete-convenience">{#delete-convenience}</h4>
-<p>=====* Al asignar <code>NULL</code> a una columna, <em>se elimina</em> esa columna. Y esto sucede
-<em>instantáneamente</em>.=====</p>
-<p>=====* También podemos pasar números de columnas en lugar de nombres en el
-<code>LHS</code>, aunque es una buena práctica de programación utilizar nombres de
-columnas.=====</p>
-<p>=====* Cuando solo hay una columna para eliminar, podemos omitir la <code>c()</code> y las
-comillas dobles y simplemente usar el nombre de la columna <em>sin comillas</em>, para
-mayor comodidad. Es decir:=====</p>
-<pre><code>``` r
-flights[, delay := NULL]
-```
-
-is equivalent to the code above.
+<ul>
+<li>
+<p>Al asignar <code>NULL</code> a una columna, <em>se elimina</em> esa columna. Y esto sucede <em>instantáneamente</em>.</p>
+</li>
+<li>
+<p>También podemos pasar números de columnas en lugar de nombres en el <code>LHS</code>, aunque es una buena práctica de programación utilizar nombres de columnas.</p>
+</li>
+<li>
+<p>Cuando solo hay una columna para eliminar, podemos omitir la <code>c()</code> y las comillas dobles y simplemente usar el nombre de la columna <em>sin comillas</em>, para mayor comodidad. Es decir:</p>
+<pre><code class="language-r">flights[, delay := NULL]
 </code></pre>
+<p>is equivalent to the code above.</p>
+</li>
+</ul>
 <h3 id="ref-j-by">d) <code>:=</code> junto con la agrupación usando <code>by</code></h3>
-<p>Ya hemos visto el uso de <code>i</code> junto con <code>:=</code> en la <a href="#ref-i-j">Sección 2b</a>. Veamos
-ahora cómo podemos usar <code>:=</code> junto con <code>by</code>.</p>
+<p>Ya hemos visto el uso de <code>i</code> junto con <code>:=</code> en la <a href="#ref-i-j">Sección 2b</a>. Veamos ahora cómo podemos usar <code>:=</code> junto con <code>by</code>.</p>
 <h4 id="c-mo-podemos-agregar-una-nueva-columna-que-contenga-para-cada-par-orig-dest-la-velocidad-m-xima">– ¿Cómo podemos agregar una nueva columna que contenga para cada par <code>orig, dest</code> la velocidad máxima?</h4>
 <pre><code class="language-r">flights[, max_speed := max(speed), by = .(origin, dest)]
 # Índice: &lt;hour&gt;
@@ -526,15 +498,17 @@ head(flights)
 # 5:  526.5957
 # 6:  518.4507
 </code></pre>
-<p>=====* Agregamos una nueva columna <code>max_speed</code> usando el operador <code>:=</code> por
-referencia.=====</p>
-<p>=====* Proporcionamos las columnas para agrupar de la misma manera que se
-muestra en la viñeta <em>Introducción a data.table</em>. Para cada grupo, se calcula
-<code>max(speed)</code>, que devuelve un único valor. Ese valor se recicla para ajustarse a
-la longitud del grupo. Una vez más, no se realizan copias en absoluto. La tabla
-<em>data.table</em> <code>flights</code> se modifica <em>in situ</em>.=====</p>
-<p>=====* También podríamos haber proporcionado <code>by</code> con un <em>vector de caracteres</em>
-como vimos en la viñeta <em>Introducción a data.table</em>, por ejemplo, <code>by = c(&quot;origin&quot;, &quot;dest&quot;)</code>.=====</p>
+<ul>
+<li>
+<p>Agregamos una nueva columna <code>max_speed</code> usando el operador <code>:=</code> por referencia.</p>
+</li>
+<li>
+<p>Proporcionamos las columnas para agrupar de la misma manera que se muestra en la viñeta <em>Introducción a data.table</em>. Para cada grupo, se calcula <code>max(speed)</code>, que devuelve un único valor. Ese valor se recicla para ajustarse a la longitud del grupo. Una vez más, no se realizan copias en absoluto. La tabla <em>data.table</em> <code>flights</code> se modifica <em>in situ</em>.</p>
+</li>
+<li>
+<p>También podríamos haber proporcionado <code>by</code> con un <em>vector de caracteres</em> como vimos en la viñeta <em>Introducción a data.table</em>, por ejemplo, <code>by = c(&quot;origin&quot;, &quot;dest&quot;)</code>.</p>
+</li>
+</ul>
 <h1></h1>
 <h3 id="e-varias-columnas-y">e) Varias columnas y <code>:=</code></h3>
 <h4 id="c-mo-podemos-agregar-dos-columnas-m-s-calculando-max-de-dep-delay-y-arr-delay-para-cada-mes-usando-sd">– ¿Cómo podemos agregar dos columnas más calculando <code>max()</code> de <code>dep_delay</code> y <code>arr_delay</code> para cada mes, usando <code>.SD</code>?</h4>
@@ -586,24 +560,19 @@ head(flights)
 # 5:  526.5957           973           996
 # 6:  518.4507           973           996
 </code></pre>
-<p>=====* Usamos el formato <code>LHS := RHS</code>. Almacenamos los nombres de las columnas
-de entrada y las nuevas columnas que se agregarán en variables separadas y las
-proporcionamos a <code>.SDcols</code> y a <code>LHS</code> (para una mejor legibilidad).=====</p>
-<p>=====* Tenga en cuenta que, dado que permitimos la asignación por referencia sin
-citar los nombres de las columnas cuando solo hay una columna, como se explica
-en la <a href="#delete-convenience">Sección 2c</a>, no podemos hacer <code>out_cols := lapply(.SD, max)</code>. Eso daría como resultado la adición de una nueva columna
-llamada <code>out_cols</code>. En su lugar, deberíamos hacer <code>c(out_cols)</code> o simplemente
-<code>(out_cols)</code>. Envolver el nombre de la variable con <code>(</code> es suficiente para
-diferenciar entre los dos casos.=====</p>
-<p>=====* La forma <code>LHS := RHS</code> nos permite operar en múltiples columnas. En la
-forma RHS, para calcular el <code>max</code> en las columnas especificadas en <code>.SDcols</code>,
-utilizamos la función base <code>lapply()</code> junto con <code>.SD</code> de la misma manera que
-hemos visto antes en la viñeta <em>“Introducción a data.table”</em>. Esto devuelve una
-lista de dos elementos, que contiene el valor máximo correspondiente a
-<code>dep_delay</code> y <code>arr_delay</code> para cada grupo.=====</p>
+<ul>
+<li>
+<p>Usamos el formato <code>LHS := RHS</code>. Almacenamos los nombres de las columnas de entrada y las nuevas columnas que se agregarán en variables separadas y las proporcionamos a <code>.SDcols</code> y a <code>LHS</code> (para una mejor legibilidad).</p>
+</li>
+<li>
+<p>Tenga en cuenta que, dado que permitimos la asignación por referencia sin citar los nombres de las columnas cuando solo hay una columna, como se explica en la <a href="#delete-convenience">Sección 2c</a>, no podemos hacer <code>out_cols := lapply(.SD, max)</code>. Eso daría como resultado la adición de una nueva columna llamada <code>out_cols</code>. En su lugar, deberíamos hacer <code>c(out_cols)</code> o simplemente <code>(out_cols)</code>. Envolver el nombre de la variable con <code>(</code> es suficiente para diferenciar entre los dos casos.</p>
+</li>
+<li>
+<p>La forma <code>LHS := RHS</code> nos permite operar en múltiples columnas. En la forma RHS, para calcular el <code>max</code> en las columnas especificadas en <code>.SDcols</code>, utilizamos la función base <code>lapply()</code> junto con <code>.SD</code> de la misma manera que hemos visto antes en la viñeta <em>“Introducción a data.table”</em>. Esto devuelve una lista de dos elementos, que contiene el valor máximo correspondiente a <code>dep_delay</code> y <code>arr_delay</code> para cada grupo.</p>
+</li>
+</ul>
 <h1></h1>
-<p>Antes de pasar a la siguiente sección, limpiemos las columnas recién creadas
-<code>speed</code>, <code>max_speed</code>, <code>max_dep_delay</code> y <code>max_arr_delay</code>.</p>
+<p>Antes de pasar a la siguiente sección, limpiemos las columnas recién creadas <code>speed</code>, <code>max_speed</code>, <code>max_dep_delay</code> y <code>max_arr_delay</code>.</p>
 <pre><code class="language-r"># RHS gets automatically recycled to length of LHS
 flights[, c(&quot;speed&quot;, &quot;max_speed&quot;, &quot;max_dep_delay&quot;, &quot;max_arr_delay&quot;) := NULL]
 # Índice: &lt;hour&gt;
@@ -647,16 +616,8 @@ head(flights)
 # 253315:  2014    10    31        -4        15      MQ    LGA    DTW       75      502    11
 # 253316:  2014    10    31        -5         1      MQ    LGA    SDF      110      659     8
 </code></pre>
-<p>Limpiemos nuevamente y convirtamos nuestras columnas de factores recién creadas
-nuevamente en columnas de caracteres. Esta vez, utilizaremos <code>.SDcols</code>, que
-acepta una función para decidir qué columnas incluir. En este caso,
-<code>is.factor()</code> devolverá las columnas que son factores. Para obtener más
-información sobre el <strong>S</strong>subconjunto de los <strong>D</strong>atos, también hay una viñeta
-de <a href="https://cran.r-project.org/package=data.table/vignettes/datatable-sd-usage.html">uso de
-SD</a>.</p>
-<p>A veces, también es bueno llevar un registro de las columnas que transformamos.
-De esa manera, incluso después de convertir nuestras columnas, podremos llamar a
-las columnas específicas que estábamos actualizando.</p>
+<p>Limpiemos nuevamente y convirtamos nuestras columnas de factores recién creadas nuevamente en columnas de caracteres. Esta vez, utilizaremos <code>.SDcols</code>, que acepta una función para decidir qué columnas incluir. En este caso, <code>is.factor()</code> devolverá las columnas que son factores. Para obtener más información sobre el <strong>S</strong>subconjunto de los <strong>D</strong>atos, también hay una viñeta de <a href="https://cran.r-project.org/package=data.table/vignettes/datatable-sd-usage.html">uso de SD</a>.</p>
+<p>A veces, también es bueno llevar un registro de las columnas que transformamos. De esa manera, incluso después de convertir nuestras columnas, podremos llamar a las columnas específicas que estábamos actualizando.</p>
 <pre><code class="language-r">factor_cols &lt;- sapply(flights, is.factor)
 flights[, names(.SD) := lapply(.SD, as.character), .SDcols = factor_cols]
 # Índice: &lt;hour&gt;
@@ -681,18 +642,13 @@ str(flights[, ..factor_cols])
 #  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt;
 </code></pre>
 <h4 id="bs-callout-bs-callout-info">{.bs-callout.bs-callout-info}</h4>
-<p>=====* También podríamos haber usado <code>(factor_cols)</code> en el <code>LHS</code> en lugar de
-<code>names(.SD)</code>.=====</p>
+<ul>
+<li>También podríamos haber usado <code>(factor_cols)</code> en el <code>LHS</code> en lugar de <code>names(.SD)</code>.</li>
+</ul>
 <h2 id="3-y-copy">3. <code>:=</code> y <code>copy()</code></h2>
-<p><code>:=</code> modifica el objeto de entrada por referencia. Aparte de las características
-que ya hemos comentado, a veces podríamos querer utilizar la función de
-actualización por referencia por su efecto secundario. Y en otras ocasiones
-puede que no sea deseable modificar el objeto original, en cuyo caso podemos
-utilizar la función <code>copy()</code>, como veremos en un momento.</p>
+<p><code>:=</code> modifica el objeto de entrada por referencia. Aparte de las características que ya hemos comentado, a veces podríamos querer utilizar la función de actualización por referencia por su efecto secundario. Y en otras ocasiones puede que no sea deseable modificar el objeto original, en cuyo caso podemos utilizar la función <code>copy()</code>, como veremos en un momento.</p>
 <h3 id="a-por-su-efecto-secundario">a) <code>:=</code> por su efecto secundario</h3>
-<p>Digamos que queremos crear una función que devuelva la <em>velocidad máxima</em> de
-cada mes, pero al mismo tiempo también queremos añadir la columna <code>velocidad</code> a
-<em>vuelos</em>. Podríamos escribir una función sencilla de la siguiente manera:</p>
+<p>Digamos que queremos crear una función que devuelva la <em>velocidad máxima</em> de cada mes, pero al mismo tiempo también queremos añadir la columna <code>velocidad</code> a <em>vuelos</em>. Podríamos escribir una función sencilla de la siguiente manera:</p>
 <pre><code class="language-r">foo &lt;- function(DT) {
   DT[, speed := distance / (air_time/60)]
   DT[, .(max_speed = max(speed)), by = month]
@@ -717,34 +673,24 @@ head(ans)
 # 5:     5  544.2857
 # 6:     6  608.5714
 </code></pre>
-<p>=====* Tenga en cuenta que se ha añadido la nueva columna <code>speed</code> a la
-data.table <code>flights</code>. Esto se debe a que <code>:=</code> realiza operaciones por
-referencia. Dado que <code>DT</code> (el argumento de la función) y <code>flights</code> hacen
-referencia al mismo objeto en la memoria, la modificación de <code>DT</code> también se
-refleja en <code>flights</code>.=====</p>
 <ul>
-<li>Y <code>ans</code> contiene la velocidad máxima para cada mes.</li>
+<li>
+<p>Tenga en cuenta que se ha añadido la nueva columna <code>speed</code> a la data.table <code>flights</code>. Esto se debe a que <code>:=</code> realiza operaciones por referencia. Dado que <code>DT</code> (el argumento de la función) y <code>flights</code> hacen referencia al mismo objeto en la memoria, la modificación de <code>DT</code> también se refleja en <code>flights</code>.</p>
+</li>
+<li>
+<p>Y <code>ans</code> contiene la velocidad máxima para cada mes.</p>
+</li>
 </ul>
 <h3 id="b-la-funci-n-copy">b) La función <code>copy()</code></h3>
-<p>En la sección anterior, usamos <code>:=</code> por su efecto secundario. Pero, por
-supuesto, esto puede no ser siempre deseable. A veces, nos gustaría pasar un
-objeto <em>data.table</em> a una función y podríamos querer usar el operador <code>:=</code>, pero
-<em>no</em> querríamos actualizar el objeto original. Podemos lograr esto usando la
-función <code>copy()</code>.</p>
-<p>La función <code>copy()</code> hace una copia <em>profunda</em> del objeto de entrada y, por lo
-tanto, cualquier operación de actualización por referencia posterior realizada
-en el objeto copiado no afectará al objeto original.</p>
+<p>En la sección anterior, usamos <code>:=</code> por su efecto secundario. Pero, por supuesto, esto puede no ser siempre deseable. A veces, nos gustaría pasar un objeto <em>data.table</em> a una función y podríamos querer usar el operador <code>:=</code>, pero <em>no</em> querríamos actualizar el objeto original. Podemos lograr esto usando la función <code>copy()</code>.</p>
+<p>La función <code>copy()</code> hace una copia <em>profunda</em> del objeto de entrada y, por lo tanto, cualquier operación de actualización por referencia posterior realizada en el objeto copiado no afectará al objeto original.</p>
 <h1></h1>
 <p>Hay dos lugares particulares donde la función <code>copy()</code> es esencial:</p>
-<p>=====1. Contrariamente a la situación que hemos visto en el punto anterior, es
-posible que no queramos que la data.table de entrada de una función se modifique
-<em>por referencia</em>. Como ejemplo, consideremos la tarea de la sección anterior,
-excepto que no queremos modificar <code>flights</code> por referencia.=====</p>
-<pre><code>Let's first delete the `speed` column we generated in the previous section.
-
-
-``` r
-flights[, speed := NULL]
+<ol>
+<li>
+<p>Contrariamente a la situación que hemos visto en el punto anterior, es posible que no queramos que la data.table de entrada de una función se modifique <em>por referencia</em>. Como ejemplo, consideremos la tarea de la sección anterior, excepto que no queremos modificar <code>flights</code> por referencia.</p>
+<p>Let’s first delete the <code>speed</code> column we generated in the previous section.</p>
+<pre><code class="language-r">flights[, speed := NULL]
 # Índice: &lt;hour&gt;
 #          year month   day dep_delay arr_delay carrier origin   dest air_time distance  hour
 #         &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;int&gt;     &lt;int&gt;  &lt;char&gt; &lt;char&gt; &lt;char&gt;    &lt;int&gt;    &lt;int&gt; &lt;int&gt;
@@ -759,12 +705,9 @@ flights[, speed := NULL]
 # 253314:  2014    10    31        -8        16      MQ    LGA    RDU       83      431    11
 # 253315:  2014    10    31        -4        15      MQ    LGA    DTW       75      502    11
 # 253316:  2014    10    31        -5         1      MQ    LGA    SDF      110      659     8
-```
-Now, we could accomplish the task as follows:
-
-
-``` r
-foo &lt;- function(DT) {
+</code></pre>
+<p>Now, we could accomplish the task as follows:</p>
+<pre><code class="language-r">foo &lt;- function(DT) {
   DT &lt;- copy(DT)                              ## deep copy
   DT[, speed := distance / (air_time/60)]     ## doesn't affect 'flights'
   DT[, .(max_speed = max(speed)), by = month]
@@ -788,25 +731,23 @@ head(ans)
 # 4:     4  585.6000
 # 5:     5  544.2857
 # 6:     6  608.5714
-```
 </code></pre>
-<p>=====* Al usar <code>copy()</code>, la función no actualizó la data.table <code>flights</code> por
-referencia. No contiene la columna <code>speed</code>.=====</p>
+</li>
+</ol>
 <ul>
-<li>Y <code>ans</code> contiene la velocidad máxima correspondiente a cada mes.</li>
+<li>
+<p>Al usar <code>copy()</code>, la función no actualizó la data.table <code>flights</code> por referencia. No contiene la columna <code>speed</code>.</p>
+</li>
+<li>
+<p>Y <code>ans</code> contiene la velocidad máxima correspondiente a cada mes.</p>
+</li>
 </ul>
-<p>Sin embargo, podríamos mejorar aún más esta funcionalidad mediante una copia
-<em>superficial</em> en lugar de una copia <em>profunda</em>. De hecho, nos gustaría mucho
-<a href="https://github.com/Rdatatable/data.table/issues/617">ofrecer esta funcionalidad para
-<code>v1.9.8</code></a>. Volveremos a
-abordar este tema en la viñeta <em>diseño de data.table</em>.</p>
+<p>Sin embargo, podríamos mejorar aún más esta funcionalidad mediante una copia <em>superficial</em> en lugar de una copia <em>profunda</em>. De hecho, nos gustaría mucho <a href="https://github.com/Rdatatable/data.table/issues/617">ofrecer esta funcionalidad para <code>v1.9.8</code></a>. Volveremos a abordar este tema en la viñeta <em>diseño de data.table</em>.</p>
 <h1></h1>
-<p>=====2. Cuando almacenamos los nombres de las columnas en una variable, por
-ejemplo, <code>DT_n = names(DT)</code>, y luego <em>agregamos/actualizamos/eliminamos</em>
-columnas <em>por referencia</em>, también modificaría <code>DT_n</code>, a menos que hagamos
-<code>copy(names(DT))</code>.=====</p>
-<pre><code>``` r
-DT = data.table(x = 1L, y = 2L)
+<ol start="2">
+<li>
+<p>Cuando almacenamos los nombres de las columnas en una variable, por ejemplo, <code>DT_n = names(DT)</code>, y luego <em>agregamos/actualizamos/eliminamos</em> columnas <em>por referencia</em>, también modificaría <code>DT_n</code>, a menos que hagamos <code>copy(names(DT))</code>.</p>
+<pre><code class="language-r">DT = data.table(x = 1L, y = 2L)
 DT_n = names(DT)
 DT_n
 # [1] &quot;x&quot; &quot;y&quot;
@@ -831,23 +772,24 @@ DT[, w := 4L]
 ## DT_n doesn't get updated
 DT_n
 # [1] &quot;x&quot; &quot;y&quot; &quot;z&quot;
-```
 </code></pre>
+</li>
+</ol>
 <h2 id="resumen">Resumen</h2>
 <h4 id="el-operador">El operador <code>:=</code></h4>
-<p>=====* Se utiliza para <em>agregar/actualizar/eliminar</em> columnas por
-referencia.=====</p>
-<p>=====* También hemos visto cómo utilizar <code>:=</code> junto con <code>i</code> y <code>by</code> de la misma
-forma que hemos visto en la viñeta <em>Introducción a data.table</em>. De la misma
-forma, podemos utilizar <code>keyby</code>, encadenar operaciones y pasar expresiones a
-<code>by</code> también de la misma forma. La sintaxis es <em>coherente</em>.=====</p>
-<p>=====* Podemos usar <code>:=</code> por su efecto secundario o usar <code>copy()</code> para no
-modificar el objeto original mientras actualizamos por referencia.=====</p>
+<ul>
+<li>
+<p>Se utiliza para <em>agregar/actualizar/eliminar</em> columnas por referencia.</p>
+</li>
+<li>
+<p>También hemos visto cómo utilizar <code>:=</code> junto con <code>i</code> y <code>by</code> de la misma forma que hemos visto en la viñeta <em>Introducción a data.table</em>. De la misma forma, podemos utilizar <code>keyby</code>, encadenar operaciones y pasar expresiones a <code>by</code> también de la misma forma. La sintaxis es <em>coherente</em>.</p>
+</li>
+<li>
+<p>Podemos usar <code>:=</code> por su efecto secundario o usar <code>copy()</code> para no modificar el objeto original mientras actualizamos por referencia.</p>
+</li>
+</ul>
 <h1></h1>
-<p>Hasta ahora hemos visto mucho sobre <code>j</code>, y cómo combinarlo con <code>by</code> y un poco de
-<code>i</code>. Volvamos nuestra atención a <code>i</code> en la siguiente viñeta <em>“Subconjunto basado
-en claves y búsqueda binaria rápida”</em> para realizar <em>subconjuntos ultrarrápidos</em>
-mediante <em>claves en data.table</em>.</p>
+<p>Hasta ahora hemos visto mucho sobre <code>j</code>, y cómo combinarlo con <code>by</code> y un poco de <code>i</code>. Volvamos nuestra atención a <code>i</code> en la siguiente viñeta <em>“Subconjunto basado en claves y búsqueda binaria rápida”</em> para realizar <em>subconjuntos ultrarrápidos</em> mediante <em>claves en data.table</em>.</p>
 <hr />
 </div>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>

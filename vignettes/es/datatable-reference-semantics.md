@@ -10,20 +10,13 @@ vignette: >
 ---
 
 
-Esta viñeta analiza la semántica de referencia de *data.table*, que permite
-*agregar/actualizar/eliminar* columnas de una *data.table por referencia*, y
-también combinarlas con `i` y `by`. Está dirigida a aquellos que ya están
-familiarizados con la sintaxis de *data.table*, su forma general, cómo crear
-subconjuntos de filas en `i`, seleccionar y calcular columnas, y realizar
-agregaciones por grupo. Si no está familiarizado con estos conceptos, lea
-primero la viñeta *"Introducción a data.table"*.
+Esta viñeta analiza la semántica de referencia de *data.table*, que permite *agregar/actualizar/eliminar* columnas de una *data.table por referencia*, y también combinarlas con `i` y `by`. Está dirigida a aquellos que ya están familiarizados con la sintaxis de *data.table*, su forma general, cómo crear subconjuntos de filas en `i`, seleccionar y calcular columnas, y realizar agregaciones por grupo. Si no está familiarizado con estos conceptos, lea primero la viñeta *"Introducción a data.table"*.
 
 ***
 
 ## Datos {#data}
 
-Utilizaremos los mismos datos de `flights` que en la viñeta *"Introducción a
-data.table"*.
+Utilizaremos los mismos datos de `flights` que en la viñeta *"Introducción a data.table"*.
 
 
 
@@ -52,26 +45,19 @@ dim(flights)
 
 En esta viñeta, vamos a
 
-=====1. primero, analizar brevemente la semántica de referencia y observar las
-dos formas diferentes en las que se puede utilizar el operador `:=`=====
+1. primero, analizar brevemente la semántica de referencia y observar las dos formas diferentes en las que se puede utilizar el operador `:=`
 
-=====2. luego, ver cómo podemos *agregar/actualizar/eliminar* columnas *por
-referencia* en `j` usando el operador `:=` y cómo combinarlo con `i` y
-`by`.=====
+2. luego, ver cómo podemos *agregar/actualizar/eliminar* columnas *por referencia* en `j` usando el operador `:=` y cómo combinarlo con `i` y `by`.
 
-=====3. y finalmente veremos el uso de `:=` por sus *efectos secundarios* y cómo
-podemos evitar los efectos secundarios usando `copy()`.=====
+3. y finalmente veremos el uso de `:=` por sus *efectos secundarios* y cómo podemos evitar los efectos secundarios usando `copy()`.
 
 ## 1. Semántica de referencia
 
-Todas las operaciones que hemos visto hasta ahora en la viñeta anterior dieron
-como resultado un nuevo conjunto de datos. Veremos cómo *agregar* nuevas
-columnas, *actualizar* o *eliminar* columnas existentes en los datos originales.
+Todas las operaciones que hemos visto hasta ahora en la viñeta anterior dieron como resultado un nuevo conjunto de datos. Veremos cómo *agregar* nuevas columnas, *actualizar* o *eliminar* columnas existentes en los datos originales.
 
 ### a) Antecedentes
 
-Antes de analizar la *semántica de referencia*, considere el *data.frame* que se
-muestra a continuación:
+Antes de analizar la *semántica de referencia*, considere el *data.frame* que se muestra a continuación:
 
 
 ``` r
@@ -95,36 +81,20 @@ DF$c <- 18:13               # (1) -- replace entire column
 DF$c[DF$ID == "b"] <- 15:13 # (2) -- subassign in column 'c'
 ```
 
-Tanto (1) como (2) dieron como resultado una copia profunda de todo el
-data.frame en versiones de `R` `< 3.1`. [Se copió más de una
-vez](https://stackoverflow.com/q/23898969/559784). Para mejorar el rendimiento
-evitando estas copias redundantes, *data.table* utilizó el [operador `:=`
-disponible pero no utilizado en R](https://stackoverflow.com/q/7033106/559784).
+Tanto (1) como (2) dieron como resultado una copia profunda de todo el data.frame en versiones de `R` `< 3.1`. [Se copió más de una vez](https://stackoverflow.com/q/23898969/559784). Para mejorar el rendimiento evitando estas copias redundantes, *data.table* utilizó el [operador `:=` disponible pero no utilizado en R](https://stackoverflow.com/q/7033106/559784).
 
-Se realizaron grandes mejoras de rendimiento en `R v3.1`, como resultado de lo
-cual solo se realiza una copia *superficial* para (1) y no una copia *profunda*.
-Sin embargo, para (2), todavía se realiza una copia *profunda* de toda la
-columna incluso en `R v3.1+`. Esto significa que cuantas más columnas se
-subasignan en la *misma consulta*, más copias *profundas* realiza R.
+Se realizaron grandes mejoras de rendimiento en `R v3.1`, como resultado de lo cual solo se realiza una copia *superficial* para (1) y no una copia *profunda*. Sin embargo, para (2), todavía se realiza una copia *profunda* de toda la columna incluso en `R v3.1+`. Esto significa que cuantas más columnas se subasignan en la *misma consulta*, más copias *profundas* realiza R.
 
 #### Copia *superficial* vs. copia *profunda*
 
-Una copia *superficial* es simplemente una copia del vector de punteros de
-columna (que corresponden a las columnas en un *data.frame* o *data.table*). Los
-datos reales no se copian físicamente en la memoria.
+Una copia *superficial* es simplemente una copia del vector de punteros de columna (que corresponden a las columnas en un *data.frame* o *data.table*). Los datos reales no se copian físicamente en la memoria.
 
-Una copia *profunda*, por otro lado, copia todos los datos a otra ubicación en
-la memoria.
+Una copia *profunda*, por otro lado, copia todos los datos a otra ubicación en la memoria.
 
-Al crear un subconjunto de una *data.table* utilizando `i` (por ejemplo,
-`DT[1:10]`), se realiza una copia *profunda*. Sin embargo, cuando no se
-proporciona `i` o es igual a `TRUE`, se realiza una copia *superficial*.
+Al crear un subconjunto de una *data.table* utilizando `i` (por ejemplo, `DT[1:10]`), se realiza una copia *profunda*. Sin embargo, cuando no se proporciona `i` o es igual a `TRUE`, se realiza una copia *superficial*.
 
 #
-Con el operador `:=` de *data.table*, no se realiza absolutamente ninguna copia
-*tanto en (1) como en (2)*, independientemente de la versión de R que esté
-utilizando. Esto se debe a que el operador `:=` actualiza las columnas de
-*data.table* *en el lugar* (por referencia).
+Con el operador `:=` de *data.table*, no se realiza absolutamente ninguna copia *tanto en (1) como en (2)*, independientemente de la versión de R que esté utilizando. Esto se debe a que el operador `:=` actualiza las columnas de *data.table* *en el lugar* (por referencia).
 
 ### b) El operador `:=`
 
@@ -151,35 +121,21 @@ DT[, `:=`(colA = valA, # valA is assigned to colA
 )]
 ```
 
-Tenga en cuenta que el código anterior explica cómo se puede utilizar `:=`. No
-son ejemplos funcionales. Comenzaremos a utilizarlos en la data.table `flights`
-a partir de la siguiente sección. (N. de T.: *LHS* es sigla de _Left Hand Side_,
-*lado izquierdo* de la expresión. *RHS* es _Right Hand Side_, *lado derecho*).
+Tenga en cuenta que el código anterior explica cómo se puede utilizar `:=`. No son ejemplos funcionales. Comenzaremos a utilizarlos en la data.table `flights` a partir de la siguiente sección. (N. de T.: *LHS* es sigla de _Left Hand Side_, *lado izquierdo* de la expresión. *RHS* es _Right Hand Side_, *lado derecho*).
 
 #
 
-=====* En (a), `LHS` toma un vector de caracteres de nombres de columnas y `RHS`
-una *lista de valores*. `RHS` solo necesita ser una `lista`, independientemente
-de cómo se genere (por ejemplo, utilizando `lapply()`, `list()`, `mget()`,
-`mapply()`, etc.). Esta forma suele ser fácil de programar y es particularmente
-útil cuando no se conocen de antemano las columnas a las que se deben asignar
-valores.=====
+* En (a), `LHS` toma un vector de caracteres de nombres de columnas y `RHS` una *lista de valores*. `RHS` solo necesita ser una `lista`, independientemente de cómo se genere (por ejemplo, utilizando `lapply()`, `list()`, `mget()`, `mapply()`, etc.). Esta forma suele ser fácil de programar y es particularmente útil cuando no se conocen de antemano las columnas a las que se deben asignar valores.
 
-=====* Por otro lado, (b) es útil si quieres anotar algunos comentarios para más
-tarde.=====
+* Por otro lado, (b) es útil si quieres anotar algunos comentarios para más tarde.
 
 * El resultado se devuelve de forma *invisible*.
 
-=====* Dado que `:=` está disponible en `j`, podemos combinarlo con las
-operaciones `i` y `by` tal como las operaciones de agregación que vimos en la
-viñeta anterior.=====
+* Dado que `:=` está disponible en `j`, podemos combinarlo con las operaciones `i` y `by` tal como las operaciones de agregación que vimos en la viñeta anterior.
 
 #
 
-En las dos formas de `:=` que se muestran arriba, tenga en cuenta que no
-asignamos el resultado a una variable, porque no es necesario. La entrada
-*data.table* se modifica por referencia. Veamos algunos ejemplos para entender
-lo que queremos decir con esto.
+En las dos formas de `:=` que se muestran arriba, tenga en cuenta que no asignamos el resultado a una variable, porque no es necesario. La entrada *data.table* se modifica por referencia. Veamos algunos ejemplos para entender lo que queremos decir con esto.
 
 Para el resto de la viñeta, trabajaremos con la data.table *flights*.
 
@@ -245,17 +201,13 @@ head(flights)
 
 * No tuvimos que volver a asignar el resultado a `flights`.
 
-=====* La data.table `flights` ahora contiene las dos columnas recién añadidas.
-Esto es lo que queremos decir con *añadidas por referencia*.=====
+* La data.table `flights` ahora contiene las dos columnas recién añadidas. Esto es lo que queremos decir con *añadidas por referencia*.
 
-=====* Usamos la forma funcional para poder agregar comentarios al costado para
-explicar lo que hace el cálculo. También puede ver la forma `LHS := RHS`
-(comentada).=====
+* Usamos la forma funcional para poder agregar comentarios al costado para explicar lo que hace el cálculo. También puede ver la forma `LHS := RHS` (comentada).
 
 ### b) Actualizar algunas filas de columnas por referencia - *sub-asignar* por referencia {#ref-ij}
 
-Echemos un vistazo a todas las horas (columna `hour`) disponibles en la
-data.table `flights`:
+Echemos un vistazo a todas las horas (columna `hour`) disponibles en la data.table `flights`:
 
 
 ``` r
@@ -264,8 +216,7 @@ flights[, sort(unique(hour))]
 #  [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 ```
 
-Vemos que hay un total de `25` valores únicos en los datos. Parece que hay tanto
-*0* como *24* horas. Reemplacemos *24* por *0*.
+Vemos que hay un total de `25` valores únicos en los datos. Parece que hay tanto *0* como *24* horas. Reemplacemos *24* por *0*.
 
 #### -- Reemplace aquellas filas donde `hour == 24` con el valor `0`
 
@@ -301,16 +252,11 @@ flights[hour == 24L, hour := 0L]
 # 253316: 359.4545    -4
 ```
 
-=====* Podemos usar `i` junto con `:=` en `j` de la misma manera que ya hemos
-visto en la viñeta *"Introducción a data.table"*.=====
+* Podemos usar `i` junto con `:=` en `j` de la misma manera que ya hemos visto en la viñeta *"Introducción a data.table"*.
 
-=====* La columna `hour` se reemplaza con `0` solo en aquellos *índices de fila*
-donde la condición `hour == 24L` especificada en `i` se evalúa como `TRUE`
-(verdadero).=====
+* La columna `hour` se reemplaza con `0` solo en aquellos *índices de fila* donde la condición `hour == 24L` especificada en `i` se evalúa como `TRUE` (verdadero).
 
-=====* `:=` devuelve el resultado de forma invisible. A veces puede ser
-necesario ver el resultado después de la asignación. Podemos lograrlo agregando
-un `[]` vacío al final de la consulta como se muestra a continuación:=====
+* `:=` devuelve el resultado de forma invisible. A veces puede ser necesario ver el resultado después de la asignación. Podemos lograrlo agregando un `[]` vacío al final de la consulta como se muestra a continuación:
 
     
     ``` r
@@ -356,9 +302,7 @@ flights[, sort(unique(hour))]
 
 #### Ejercicio: {#update-by-reference-question}
 
-¿Cuál es la diferencia entre `flights[hour == 24L, hour := 0L]` y `flights[hour
-== 24L][, hour := 0L]`? Una pista: El último necesita una asignación (`<-`) si
-desea utilizar el resultado más adelante.
+¿Cuál es la diferencia entre `flights[hour == 24L, hour := 0L]` y `flights[hour == 24L][, hour := 0L]`? Una pista: El último necesita una asignación (`<-`) si desea utilizar el resultado más adelante.
 
 Si no puedes resolverlo, echa un vistazo a la sección `Nota` de `?":="`.
 
@@ -412,16 +356,11 @@ head(flights)
 
 #### {#delete-convenience}
 
-=====* Al asignar `NULL` a una columna, *se elimina* esa columna. Y esto sucede
-*instantáneamente*.=====
+* Al asignar `NULL` a una columna, *se elimina* esa columna. Y esto sucede *instantáneamente*.
 
-=====* También podemos pasar números de columnas en lugar de nombres en el
-`LHS`, aunque es una buena práctica de programación utilizar nombres de
-columnas.=====
+* También podemos pasar números de columnas en lugar de nombres en el `LHS`, aunque es una buena práctica de programación utilizar nombres de columnas.
 
-=====* Cuando solo hay una columna para eliminar, podemos omitir la `c()` y las
-comillas dobles y simplemente usar el nombre de la columna *sin comillas*, para
-mayor comodidad. Es decir:=====
+* Cuando solo hay una columna para eliminar, podemos omitir la `c()` y las comillas dobles y simplemente usar el nombre de la columna *sin comillas*, para mayor comodidad. Es decir:
 
     
     ``` r
@@ -432,8 +371,7 @@ mayor comodidad. Es decir:=====
 
 ### d) `:=` junto con la agrupación usando `by` {#ref-j-by}
 
-Ya hemos visto el uso de `i` junto con `:=` en la [Sección 2b](#ref-i-j). Veamos
-ahora cómo podemos usar `:=` junto con `by`.
+Ya hemos visto el uso de `i` junto con `:=` en la [Sección 2b](#ref-i-j). Veamos ahora cómo podemos usar `:=` junto con `by`.
 
 #### -- ¿Cómo podemos agregar una nueva columna que contenga para cada par `orig, dest` la velocidad máxima?
 
@@ -486,18 +424,11 @@ head(flights)
 # 6:  518.4507
 ```
 
-=====* Agregamos una nueva columna `max_speed` usando el operador `:=` por
-referencia.=====
+* Agregamos una nueva columna `max_speed` usando el operador `:=` por referencia.
 
-=====* Proporcionamos las columnas para agrupar de la misma manera que se
-muestra en la viñeta *Introducción a data.table*. Para cada grupo, se calcula
-`max(speed)`, que devuelve un único valor. Ese valor se recicla para ajustarse a
-la longitud del grupo. Una vez más, no se realizan copias en absoluto. La tabla
-*data.table* `flights` se modifica *in situ*.=====
+* Proporcionamos las columnas para agrupar de la misma manera que se muestra en la viñeta *Introducción a data.table*. Para cada grupo, se calcula `max(speed)`, que devuelve un único valor. Ese valor se recicla para ajustarse a la longitud del grupo. Una vez más, no se realizan copias en absoluto. La tabla *data.table* `flights` se modifica *in situ*.
 
-=====* También podríamos haber proporcionado `by` con un *vector de caracteres*
-como vimos en la viñeta *Introducción a data.table*, por ejemplo, `by =
-c("origin", "dest")`.=====
+* También podríamos haber proporcionado `by` con un *vector de caracteres* como vimos en la viñeta *Introducción a data.table*, por ejemplo, `by = c("origin", "dest")`.
 
 #
 
@@ -556,28 +487,14 @@ head(flights)
 # 6:  518.4507           973           996
 ```
 
-=====* Usamos el formato `LHS := RHS`. Almacenamos los nombres de las columnas
-de entrada y las nuevas columnas que se agregarán en variables separadas y las
-proporcionamos a `.SDcols` y a `LHS` (para una mejor legibilidad).=====
+* Usamos el formato `LHS := RHS`. Almacenamos los nombres de las columnas de entrada y las nuevas columnas que se agregarán en variables separadas y las proporcionamos a `.SDcols` y a `LHS` (para una mejor legibilidad).
 
-=====* Tenga en cuenta que, dado que permitimos la asignación por referencia sin
-citar los nombres de las columnas cuando solo hay una columna, como se explica
-en la [Sección 2c](#delete-convenience), no podemos hacer `out_cols :=
-lapply(.SD, max)`. Eso daría como resultado la adición de una nueva columna
-llamada `out_cols`. En su lugar, deberíamos hacer `c(out_cols)` o simplemente
-`(out_cols)`. Envolver el nombre de la variable con `(` es suficiente para
-diferenciar entre los dos casos.=====
+* Tenga en cuenta que, dado que permitimos la asignación por referencia sin citar los nombres de las columnas cuando solo hay una columna, como se explica en la [Sección 2c](#delete-convenience), no podemos hacer `out_cols := lapply(.SD, max)`. Eso daría como resultado la adición de una nueva columna llamada `out_cols`. En su lugar, deberíamos hacer `c(out_cols)` o simplemente `(out_cols)`. Envolver el nombre de la variable con `(` es suficiente para diferenciar entre los dos casos.
 
-=====* La forma `LHS := RHS` nos permite operar en múltiples columnas. En la
-forma RHS, para calcular el `max` en las columnas especificadas en `.SDcols`,
-utilizamos la función base `lapply()` junto con `.SD` de la misma manera que
-hemos visto antes en la viñeta *"Introducción a data.table"*. Esto devuelve una
-lista de dos elementos, que contiene el valor máximo correspondiente a
-`dep_delay` y `arr_delay` para cada grupo.=====
+* La forma `LHS := RHS` nos permite operar en múltiples columnas. En la forma RHS, para calcular el `max` en las columnas especificadas en `.SDcols`, utilizamos la función base `lapply()` junto con `.SD` de la misma manera que hemos visto antes en la viñeta *"Introducción a data.table"*. Esto devuelve una lista de dos elementos, que contiene el valor máximo correspondiente a `dep_delay` y `arr_delay` para cada grupo.
 
 #
-Antes de pasar a la siguiente sección, limpiemos las columnas recién creadas
-`speed`, `max_speed`, `max_dep_delay` y `max_arr_delay`.
+Antes de pasar a la siguiente sección, limpiemos las columnas recién creadas `speed`, `max_speed`, `max_dep_delay` y `max_arr_delay`.
 
 
 ``` r
@@ -628,17 +545,9 @@ flights[, names(.SD) := lapply(.SD, as.factor), .SDcols = is.character]
 # 253315:  2014    10    31        -4        15      MQ    LGA    DTW       75      502    11
 # 253316:  2014    10    31        -5         1      MQ    LGA    SDF      110      659     8
 ```
-Limpiemos nuevamente y convirtamos nuestras columnas de factores recién creadas
-nuevamente en columnas de caracteres. Esta vez, utilizaremos `.SDcols`, que
-acepta una función para decidir qué columnas incluir. En este caso,
-`is.factor()` devolverá las columnas que son factores. Para obtener más
-información sobre el **S**subconjunto de los **D**atos, también hay una viñeta
-de [uso de
-SD](https://cran.r-project.org/package=data.table/vignettes/datatable-sd-usage.html).
+Limpiemos nuevamente y convirtamos nuestras columnas de factores recién creadas nuevamente en columnas de caracteres. Esta vez, utilizaremos `.SDcols`, que acepta una función para decidir qué columnas incluir. En este caso, `is.factor()` devolverá las columnas que son factores. Para obtener más información sobre el **S**subconjunto de los **D**atos, también hay una viñeta de [uso de SD](https://cran.r-project.org/package=data.table/vignettes/datatable-sd-usage.html).
 
-A veces, también es bueno llevar un registro de las columnas que transformamos.
-De esa manera, incluso después de convertir nuestras columnas, podremos llamar a
-las columnas específicas que estábamos actualizando.
+A veces, también es bueno llevar un registro de las columnas que transformamos. De esa manera, incluso después de convertir nuestras columnas, podremos llamar a las columnas específicas que estábamos actualizando.
 
 ``` r
 factor_cols <- sapply(flights, is.factor)
@@ -667,22 +576,15 @@ str(flights[, ..factor_cols])
 
 #### {.bs-callout.bs-callout-info}
 
-=====* También podríamos haber usado `(factor_cols)` en el `LHS` en lugar de
-`names(.SD)`.=====
+* También podríamos haber usado `(factor_cols)` en el `LHS` en lugar de `names(.SD)`.
 
 ## 3. `:=` y `copy()`
 
-`:=` modifica el objeto de entrada por referencia. Aparte de las características
-que ya hemos comentado, a veces podríamos querer utilizar la función de
-actualización por referencia por su efecto secundario. Y en otras ocasiones
-puede que no sea deseable modificar el objeto original, en cuyo caso podemos
-utilizar la función `copy()`, como veremos en un momento.
+`:=` modifica el objeto de entrada por referencia. Aparte de las características que ya hemos comentado, a veces podríamos querer utilizar la función de actualización por referencia por su efecto secundario. Y en otras ocasiones puede que no sea deseable modificar el objeto original, en cuyo caso podemos utilizar la función `copy()`, como veremos en un momento.
 
 ### a) `:=` por su efecto secundario
 
-Digamos que queremos crear una función que devuelva la *velocidad máxima* de
-cada mes, pero al mismo tiempo también queremos añadir la columna `velocidad` a
-*vuelos*. Podríamos escribir una función sencilla de la siguiente manera:
+Digamos que queremos crear una función que devuelva la *velocidad máxima* de cada mes, pero al mismo tiempo también queremos añadir la columna `velocidad` a *vuelos*. Podríamos escribir una función sencilla de la siguiente manera:
 
 
 ``` r
@@ -711,34 +613,21 @@ head(ans)
 # 6:     6  608.5714
 ```
 
-=====* Tenga en cuenta que se ha añadido la nueva columna `speed` a la
-data.table `flights`. Esto se debe a que `:=` realiza operaciones por
-referencia. Dado que `DT` (el argumento de la función) y `flights` hacen
-referencia al mismo objeto en la memoria, la modificación de `DT` también se
-refleja en `flights`.=====
+* Tenga en cuenta que se ha añadido la nueva columna `speed` a la data.table `flights`. Esto se debe a que `:=` realiza operaciones por referencia. Dado que `DT` (el argumento de la función) y `flights` hacen referencia al mismo objeto en la memoria, la modificación de `DT` también se refleja en `flights`.
 
 * Y `ans` contiene la velocidad máxima para cada mes.
 
 ### b) La función `copy()`
 
-En la sección anterior, usamos `:=` por su efecto secundario. Pero, por
-supuesto, esto puede no ser siempre deseable. A veces, nos gustaría pasar un
-objeto *data.table* a una función y podríamos querer usar el operador `:=`, pero
-*no* querríamos actualizar el objeto original. Podemos lograr esto usando la
-función `copy()`.
+En la sección anterior, usamos `:=` por su efecto secundario. Pero, por supuesto, esto puede no ser siempre deseable. A veces, nos gustaría pasar un objeto *data.table* a una función y podríamos querer usar el operador `:=`, pero *no* querríamos actualizar el objeto original. Podemos lograr esto usando la función `copy()`.
 
-La función `copy()` hace una copia *profunda* del objeto de entrada y, por lo
-tanto, cualquier operación de actualización por referencia posterior realizada
-en el objeto copiado no afectará al objeto original.
+La función `copy()` hace una copia *profunda* del objeto de entrada y, por lo tanto, cualquier operación de actualización por referencia posterior realizada en el objeto copiado no afectará al objeto original.
 
 #
 
 Hay dos lugares particulares donde la función `copy()` es esencial:
 
-=====1. Contrariamente a la situación que hemos visto en el punto anterior, es
-posible que no queramos que la data.table de entrada de una función se modifique
-*por referencia*. Como ejemplo, consideremos la tarea de la sección anterior,
-excepto que no queremos modificar `flights` por referencia.=====
+1. Contrariamente a la situación que hemos visto en el punto anterior, es posible que no queramos que la data.table de entrada de una función se modifique *por referencia*. Como ejemplo, consideremos la tarea de la sección anterior, excepto que no queremos modificar `flights` por referencia.
 
     Let's first delete the `speed` column we generated in the previous section.
 
@@ -790,23 +679,15 @@ excepto que no queremos modificar `flights` por referencia.=====
     # 6:     6  608.5714
     ```
 
-=====* Al usar `copy()`, la función no actualizó la data.table `flights` por
-referencia. No contiene la columna `speed`.=====
+* Al usar `copy()`, la función no actualizó la data.table `flights` por referencia. No contiene la columna `speed`.
 
 * Y `ans` contiene la velocidad máxima correspondiente a cada mes.
 
-Sin embargo, podríamos mejorar aún más esta funcionalidad mediante una copia
-*superficial* en lugar de una copia *profunda*. De hecho, nos gustaría mucho
-[ofrecer esta funcionalidad para
-`v1.9.8`](https://github.com/Rdatatable/data.table/issues/617). Volveremos a
-abordar este tema en la viñeta *diseño de data.table*.
+Sin embargo, podríamos mejorar aún más esta funcionalidad mediante una copia *superficial* en lugar de una copia *profunda*. De hecho, nos gustaría mucho [ofrecer esta funcionalidad para `v1.9.8`](https://github.com/Rdatatable/data.table/issues/617). Volveremos a abordar este tema en la viñeta *diseño de data.table*.
 
 #
 
-=====2. Cuando almacenamos los nombres de las columnas en una variable, por
-ejemplo, `DT_n = names(DT)`, y luego *agregamos/actualizamos/eliminamos*
-columnas *por referencia*, también modificaría `DT_n`, a menos que hagamos
-`copy(names(DT))`.=====
+2. Cuando almacenamos los nombres de las columnas en una variable, por ejemplo, `DT_n = names(DT)`, y luego *agregamos/actualizamos/eliminamos* columnas *por referencia*, también modificaría `DT_n`, a menos que hagamos `copy(names(DT))`.
 
     
     ``` r
@@ -841,25 +722,17 @@ columnas *por referencia*, también modificaría `DT_n`, a menos que hagamos
 
 #### El operador `:=`
 
-=====* Se utiliza para *agregar/actualizar/eliminar* columnas por
-referencia.=====
+* Se utiliza para *agregar/actualizar/eliminar* columnas por referencia.
 
-=====* También hemos visto cómo utilizar `:=` junto con `i` y `by` de la misma
-forma que hemos visto en la viñeta *Introducción a data.table*. De la misma
-forma, podemos utilizar `keyby`, encadenar operaciones y pasar expresiones a
-`by` también de la misma forma. La sintaxis es *coherente*.=====
+* También hemos visto cómo utilizar `:=` junto con `i` y `by` de la misma forma que hemos visto en la viñeta *Introducción a data.table*. De la misma forma, podemos utilizar `keyby`, encadenar operaciones y pasar expresiones a `by` también de la misma forma. La sintaxis es *coherente*.
 
-=====* Podemos usar `:=` por su efecto secundario o usar `copy()` para no
-modificar el objeto original mientras actualizamos por referencia.=====
+* Podemos usar `:=` por su efecto secundario o usar `copy()` para no modificar el objeto original mientras actualizamos por referencia.
 
 
 
 #
 
-Hasta ahora hemos visto mucho sobre `j`, y cómo combinarlo con `by` y un poco de
-`i`. Volvamos nuestra atención a `i` en la siguiente viñeta *"Subconjunto basado
-en claves y búsqueda binaria rápida"* para realizar *subconjuntos ultrarrápidos*
-mediante *claves en data.table*.
+Hasta ahora hemos visto mucho sobre `j`, y cómo combinarlo con `by` y un poco de `i`. Volvamos nuestra atención a `i` en la siguiente viñeta *"Subconjunto basado en claves y búsqueda binaria rápida"* para realizar *subconjuntos ultrarrápidos* mediante *claves en data.table*.
 
 ***
 

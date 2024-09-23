@@ -286,6 +286,7 @@ rmd2po <- function(rmdfile, lang = "fr", podir = "po",
   # Create the .po file, using md2po on the temporary rmd file
   pofile <- file.path(lang, podir, paste0(rmdfilename, "-", lang, ".po"))
   #@@
+  ## La versión usada de md2po es diferente Translate Toolkit (3.13.3)
   # cmd <- paste0('"', md2po, '" --quiet --metadata "Language: ', lang,
   #               '" --include-codeblocks --merge-pofiles --remove-not-found ',
   #               '--save --po-filepath ', pofile)
@@ -295,6 +296,7 @@ rmd2po <- function(rmdfile, lang = "fr", podir = "po",
   if (isTRUE(verbose))
     message("Running: ", cmd)
   #@@
+  ## tt 3.12.3 no toma de stdin
   # res <- tryCatch(system(cmd, input = tmpfile, intern = TRUE),
   res <- tryCatch(system(cmd, intern = TRUE),
   #@@
@@ -344,13 +346,11 @@ po2rmd <- function(rmdfile, lang = "fr", podir = "po",
   # Create temporary file, if needed, with modified Rmd/qmd file so that it is
   # correctly processed with po2md
   #@@
-  # adicionalmente lo renombramos .md, porque parece que la versión de 
-  # Translate Toolkit (3.13.3) que uso no lo reconoce de otra forma 
-  #@@
-  #@@
+  ## adicionalmente lo renombramos .md, porque parece que la versión de 
+  ## Translate Toolkit (3.13.3) que uso no lo reconoce de otra forma 
   #  tmpfile <- file.path(lang, paste0(basename(rmdfile), ".tmp"))
-  #@@
   tmpfile <- file.path(lang, paste0(basename(rmdfile), ".tmp.md"))
+  #@@
   if (!file.exists(tmpfile))
     .create_temp_rmd(rmdfile, tmpfile)
 
@@ -359,18 +359,19 @@ po2rmd <- function(rmdfile, lang = "fr", podir = "po",
   pofile <- file.path(lang, podir, paste0(rmdfilename, "-", lang, ".po"))
   if (!file.exists(pofile))
     stop("The .po file '", pofile, "' is not found.")
-  #@@
-  # cmd <- paste0('"', po2md, '" --quiet --pofiles ', pofile,
-  #  ' --wrapwidth 0 --save ', rmd2file)
-  #@@
-    cmd <- paste(shQuote(po2md), "-i", shQuote(pofile), "-t", shQuote(tmpfile), 
+    #@@
+    ## la opción -m0 para que no recorte las cadenas muy largas  
+    # cmd <- paste0('"', po2md, '" --quiet --pofiles ', pofile,
+    #  ' --wrapwidth 0 --save ', rmd2file)
+    cmd <- paste(shQuote(po2md), "-m0", "-i", shQuote(pofile), "-t", shQuote(tmpfile), 
                  "-o", shQuote(rmd2file))
-  if (isTRUE(verbose))
+    #@@
+    if (isTRUE(verbose))
     message("Running: ", cmd)
     #@@
-    #  res <- tryCatch(system(cmd, input = tmpfile, intern = TRUE),
-    #@@
+    # res <- tryCatch(system(cmd, input = tmpfile, intern = TRUE),
     res <- tryCatch(system(cmd, intern = TRUE),
+    #@@
                     
     error = function(e) stop(e, call. = FALSE))
   if (isTRUE(verbose))

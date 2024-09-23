@@ -11,17 +11,13 @@ vignette: >
 
 
 
-This vignette assumes that the reader is familiar with data.table's `[i, j, by]`
-syntax, and how to perform fast key based subsets. If you're not familiar with
-these concepts, please read the *"Introduction to data.table"*, *"Reference
-semantics"* and *"Keys and fast binary search based subset"* vignettes first.
+This vignette assumes that the reader is familiar with data.table's `[i, j, by]` syntax, and how to perform fast key based subsets. If you're not familiar with these concepts, please read the *"Introduction to data.table"*, *"Reference semantics"* and *"Keys and fast binary search based subset"* vignettes first.
 
 ***
 
 ## Data {#data}
 
-We will use the same `flights` data as in the *"Introduction to data.table"*
-vignette.
+We will use the same `flights` data as in the *"Introduction to data.table"* vignette.
 
 
 
@@ -45,30 +41,21 @@ dim(flights)
 
 In this vignette, we will
 
-=====* discuss *secondary indices* and provide rationale as to why we need them
-by citing cases where setting keys is not necessarily ideal,=====
+* discuss *secondary indices* and provide rationale as to why we need them by citing cases where setting keys is not necessarily ideal,
 
-=====* perform fast subsetting, once again, but using the new `on` argument,
-which computes secondary indices internally for the task (temporarily), and
-reuses if one already exists,=====
+* perform fast subsetting, once again, but using the new `on` argument, which computes secondary indices internally for the task (temporarily), and reuses if one already exists,
 
-=====* and finally look at *auto indexing* which goes a step further and creates
-secondary indices automatically, but does so on native R syntax for
-subsetting.=====
+* and finally look at *auto indexing* which goes a step further and creates secondary indices automatically, but does so on native R syntax for subsetting.
 
 ## 1. Secondary indices
 
 ### a) What are secondary indices?
 
-Secondary indices are similar to `keys` in *data.table*, except for two major
-differences:
+Secondary indices are similar to `keys` in *data.table*, except for two major differences:
 
-=====* It *doesn't* physically reorder the entire data.table in RAM. Instead, it
-only computes the order for the set of columns provided and stores that *order
-vector* in an additional attribute called `index`.=====
+* It *doesn't* physically reorder the entire data.table in RAM. Instead, it only computes the order for the set of columns provided and stores that *order vector* in an additional attribute called `index`.
 
-=====* There can be more than one secondary index for a data.table (as we will
-see below).=====
+* There can be more than one secondary index for a data.table (as we will see below).
 
 ### b) Set and get secondary indices
 
@@ -96,11 +83,9 @@ names(attributes(flights))
 # [5] "index"
 ```
 
-=====* `setindex` and `setindexv()` allows adding a secondary index to the
-data.table.=====
+* `setindex` and `setindexv()` allows adding a secondary index to the data.table.
 
-=====* Note that `flights` is **not** physically reordered in increasing order
-of `origin`, as would have been the case with `setkey()`.=====
+* Note that `flights` is **not** physically reordered in increasing order of `origin`, as would have been the case with `setkey()`.
 
 * Also note that the attribute `index` has been added to `flights`.
 
@@ -118,19 +103,15 @@ indices(flights)
 # [1] "origin"       "origin__dest"
 ```
 
-=====* The function `indices()` returns all current secondary indices in the
-data.table. If none exists, `NULL` is returned.=====
+* The function `indices()` returns all current secondary indices in the data.table. If none exists, `NULL` is returned.
 
-=====* Note that by creating another index on the columns `origin, dest`, we do
-not lose the first index created on the column `origin`, i.e., we can have
-multiple secondary indices.=====
+* Note that by creating another index on the columns `origin, dest`, we do not lose the first index created on the column `origin`, i.e., we can have multiple secondary indices.
 
 ### c) Why do we need secondary indices?
 
 #### -- Reordering a data.table can be expensive and not always ideal
 
-Consider the case where you would like to perform a fast key based subset on
-`origin` column for the value "JFK". We'd do this as:
+Consider the case where you would like to perform a fast key based subset on `origin` column for the value "JFK". We'd do this as:
 
 
 ``` r
@@ -143,24 +124,17 @@ flights["JFK"] # or flights[.("JFK")]
 
 a) computing the order vector for the column(s) provided, here, `origin`, and
 
-b) reordering the entire data.table, by reference, based on the order vector
-computed.
+b) reordering the entire data.table, by reference, based on the order vector computed.
 
 #
 
-Computing the order isn't the time consuming part, since data.table uses true
-radix sorting on integer, character and numeric vectors. However, reordering the
-data.table could be time consuming (depending on the number of rows and
-columns).
+Computing the order isn't the time consuming part, since data.table uses true radix sorting on integer, character and numeric vectors. However, reordering the data.table could be time consuming (depending on the number of rows and columns).
 
-Unless our task involves repeated subsetting on the same column, fast key based
-subsetting could effectively be nullified by the time to reorder, depending on
-our data.table dimensions.
+Unless our task involves repeated subsetting on the same column, fast key based subsetting could effectively be nullified by the time to reorder, depending on our data.table dimensions.
 
 #### -- There can be only one `key` at the most
 
-Now if we would like to repeat the same operation but on `dest` column instead,
-for the value "LAX", then we have to `setkey()`, *again*.
+Now if we would like to repeat the same operation but on `dest` column instead, for the value "LAX", then we have to `setkey()`, *again*.
 
 
 ``` r
@@ -169,33 +143,25 @@ setkey(flights, dest)
 flights["LAX"]
 ```
 
-And this reorders `flights` by `dest`, *again*. What we would really like is to
-be able to perform the fast subsetting by eliminating the reordering step.
+And this reorders `flights` by `dest`, *again*. What we would really like is to be able to perform the fast subsetting by eliminating the reordering step.
 
 And this is precisely what *secondary indices* allow for!
 
 #### -- Secondary indices can be reused
 
-Since there can be multiple secondary indices, and creating an index is as
-simple as storing the order vector as an attribute, this allows us to even
-eliminate the time to recompute the order vector if an index already exists.
+Since there can be multiple secondary indices, and creating an index is as simple as storing the order vector as an attribute, this allows us to even eliminate the time to recompute the order vector if an index already exists.
 
 #### -- The new `on` argument allows for cleaner syntax and automatic creation and reuse of secondary indices
 
-As we will see in the next section, the `on` argument provides several
-advantages:
+As we will see in the next section, the `on` argument provides several advantages:
 
 #### `on` argument
 
-=====* enables subsetting by computing secondary indices on the fly. This
-eliminates having to do `setindex()` every time.=====
+* enables subsetting by computing secondary indices on the fly. This eliminates having to do `setindex()` every time.
 
-=====* allows easy reuse of existing indices by just checking the
-attributes.=====
+* allows easy reuse of existing indices by just checking the attributes.
 
-=====* allows for a cleaner syntax by having the columns on which the subset is
-performed as part of the syntax. This makes the code easier to follow when
-looking at it at a later point.=====
+* allows for a cleaner syntax by having the columns on which the subset is performed as part of the syntax. This makes the code easier to follow when looking at it at a later point.
 
     Note that `on` argument can also be used on keyed subsets as well. In fact, we encourage providing the `on` argument even when subsetting using keys for better readability.
 
@@ -229,13 +195,9 @@ flights["JFK", on = "origin"]
 # flights[list("JFK"), on = "origin"]
 ```
 
-=====* This statement performs a fast binary search based subset as well, by
-computing the index on the fly. However, note that it doesn't save the index as
-an attribute automatically. This may change in the future.=====
+* This statement performs a fast binary search based subset as well, by computing the index on the fly. However, note that it doesn't save the index as an attribute automatically. This may change in the future.
 
-=====* If we had already created a secondary index, using `setindex()`, then
-`on` would reuse it instead of (re)computing it. We can see that by using
-`verbose = TRUE`:=====
+* If we had already created a secondary index, using `setindex()`, then `on` would reuse it instead of (re)computing it. We can see that by using `verbose = TRUE`:
 
     
     ``` r
@@ -245,9 +207,9 @@ an attribute automatically. This may change in the future.=====
     # on= matches existing index, using index
     # Starting bmerge ...
     # <forder.c>: recibió 1 filas y 1 columnas
-    # forderReuseSorting: opt=-1, took 0.001s
+    # forderReuseSorting: opt=-1, took 0.000s
     # bmerge: looping bmerge_r took 0.000s
-    # bmerge: took 0.001s
+    # bmerge: took 0.000s
     # bmerge done in 0.000s elapsed (0.000s cpu)
     # Constructing irows for '!byjoin || nqbyjoin' ... 0.000s elapsed (0.000s cpu)
     #     year month   day dep_delay arr_delay carrier origin   dest air_time distance  hour
@@ -275,18 +237,13 @@ flights[.("JFK", "LAX"), on = c("origin", "dest")][1:5]
 # 5:  2014     1     1        -2       -18      AA    JFK    LAX      338     2475    21
 ```
 
-=====* `on` argument accepts a character vector of column names corresponding to
-the order provided to `i-argument`.=====
+* `on` argument accepts a character vector of column names corresponding to the order provided to `i-argument`.
 
-=====* Since the time to compute the secondary index is quite small, we don't
-have to use `setindex()`, unless, once again, the task involves repeated
-subsetting on the same column.=====
+* Since the time to compute the secondary index is quite small, we don't have to use `setindex()`, unless, once again, the task involves repeated subsetting on the same column.
 
 ### b) Select in `j`
 
-All the operations we will discuss below are no different to the ones we already
-saw in the *Keys and fast binary search based subset* vignette. Except we'll be
-using the `on` argument instead of setting keys.
+All the operations we will discuss below are no different to the ones we already saw in the *Keys and fast binary search based subset* vignette. Except we'll be using the `on` argument instead of setting keys.
 
 #### -- Return `arr_delay` column alone as a data.table corresponding to `origin = "LGA"` and `dest = "TPA"`
 
@@ -342,9 +299,7 @@ flights[.("LGA", "TPA"), max(arr_delay), on = c("origin", "dest")]
 
 ### e) *sub-assign* by reference using `:=` in `j`
 
-We have seen this example already in the *Reference semantics* and *Keys and
-fast binary search based subset* vignette. Let's take a look at all the `hours`
-available in the `flights` *data.table*:
+We have seen this example already in the *Reference semantics* and *Keys and fast binary search based subset* vignette. Let's take a look at all the `hours` available in the `flights` *data.table*:
 
 
 ``` r
@@ -353,9 +308,7 @@ flights[, sort(unique(hour))]
 #  [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 ```
 
-We see that there are totally `25` unique values in the data. Both *0* and *24*
-hours seem to be present. Let's go ahead and replace *24* with *0*, but this
-time using `on` instead of setting keys.
+We see that there are totally `25` unique values in the data. Both *0* and *24* hours seem to be present. Let's go ahead and replace *24* with *0*, but this time using `on` instead of setting keys.
 
 
 ``` r
@@ -384,11 +337,7 @@ flights[, sort(unique(hour))]
 #  [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
 ```
 
-=====* This is particularly a huge advantage of secondary indices. Previously,
-just to update a few rows of `hour`, we had to `setkey()` on it, which
-inevitably reorders the entire data.table. With `on`, the order is preserved,
-and the operation is much faster! Looking at the code, the task we wanted to
-perform is also quite clear.=====
+* This is particularly a huge advantage of secondary indices. Previously, just to update a few rows of `hour`, we had to `setkey()` on it, which inevitably reorders the entire data.table. With `on`, the order is preserved, and the operation is much faster! Looking at the code, the task we wanted to perform is also quite clear.
 
 ### f) Aggregation using `by`
 
@@ -409,15 +358,11 @@ head(ans)
 # 6:     6   798
 ```
 
-=====* We would have had to set the `key` back to `origin, dest` again, if we
-did not use `on` which internally builds secondary indices on the fly.=====
+* We would have had to set the `key` back to `origin, dest` again, if we did not use `on` which internally builds secondary indices on the fly.
 
 ### g) The *mult* argument
 
-The other arguments including `mult` work exactly the same way as we saw in the
-*Keys and fast binary search based subset* vignette. The default value for
-`mult` is "all". We can choose, instead only the "first" or "last" matching rows
-should be returned.
+The other arguments including `mult` work exactly the same way as we saw in the *Keys and fast binary search based subset* vignette. The default value for `mult` is "all". We can choose, instead only the "first" or "last" matching rows should be returned.
 
 #### -- Subset only the first matching row where `dest` matches *"BOS"* and *"DAY"*
 
@@ -444,8 +389,7 @@ flights[.(c("LGA", "JFK", "EWR"), "XNA"), on = c("origin", "dest"), mult = "last
 
 ### h) The *nomatch* argument
 
-We can choose if queries that do not match should return `NA` or be skipped
-altogether using the `nomatch` argument.
+We can choose if queries that do not match should return `NA` or be skipped altogether using the `nomatch` argument.
 
 #### -- From the previous example, subset all rows only if there's a match
 
@@ -458,20 +402,13 @@ flights[.(c("LGA", "JFK", "EWR"), "XNA"), mult = "last", on = c("origin", "dest"
 # 2:  2014    10    31        -2       -25      EV    EWR    XNA      160     1131     6
 ```
 
-=====* There are no flights connecting "JFK" and "XNA". Therefore, that row is
-skipped in the result.=====
+* There are no flights connecting "JFK" and "XNA". Therefore, that row is skipped in the result.
 
 ## 3. Auto indexing
 
-First we looked at how to fast subset using binary search using *keys*. Then we
-figured out that we could improve performance even further and have cleaner
-syntax by using secondary indices.
+First we looked at how to fast subset using binary search using *keys*. Then we figured out that we could improve performance even further and have cleaner syntax by using secondary indices.
 
-That is what *auto indexing* does. At the moment, it is only implemented for
-binary operators `==` and `%in%`. An index is automatically created *and* saved
-as an attribute. That is, unlike the `on` argument which computes the index on
-the fly each time (unless one already exists), a secondary index is created
-here.
+That is what *auto indexing* does. At the moment, it is only implemented for binary operators `==` and `%in%`. An index is automatically created *and* saved as an attribute. That is, unlike the `on` argument which computes the index on the fly each time (unless one already exists), a secondary index is created here.
 
 Let's start by creating a data.table big enough to highlight the advantage.
 
@@ -483,8 +420,7 @@ print(object.size(dt), units = "Mb")
 # 114.4 Mb
 ```
 
-When we use `==` or `%in%` on a single column for the first time, a secondary
-index is created automatically, and it is used to perform the subset.
+When we use `==` or `%in%` on a single column for the first time, a secondary index is created automatically, and it is used to perform the subset.
 
 
 ``` r
@@ -495,7 +431,7 @@ names(attributes(dt))
 ## run thefirst time
 (t1 <- system.time(ans <- dt[x == 989L]))
 #    user  system elapsed 
-#    0.47    0.08    1.21
+#    0.47    0.07    0.57
 head(ans)
 #        x         y
 #    <int>     <num>
@@ -515,40 +451,30 @@ indices(dt)
 # [1] "x"
 ```
 
-The time to subset the first time is the time to create the index + the time to
-subset. Since creating a secondary index involves only creating the order
-vector, this combined operation is faster than vector scans in many cases. But
-the real advantage comes in successive subsets. They are extremely fast.
+The time to subset the first time is the time to create the index + the time to subset. Since creating a secondary index involves only creating the order vector, this combined operation is faster than vector scans in many cases. But the real advantage comes in successive subsets. They are extremely fast.
 
 
 ``` r
 ## successive subsets
 (t2 <- system.time(dt[x == 989L]))
 #    user  system elapsed 
-#    0.01    0.00    0.06
+#    0.01    0.01    0.01
 system.time(dt[x %in% 1989:2012])
 #    user  system elapsed 
-#    0.06    0.00    0.06
+#    0.03    0.00    0.03
 ```
 
-=====* Running the first time took 1.210 seconds
-where as the second time took 0.060 seconds.=====
+* Running the first time took 0.570 seconds where as the second time took 0.010 seconds.
 
-=====* Auto indexing can be disabled by setting the global argument
-`options(datatable.auto.index = FALSE)`.=====
+* Auto indexing can be disabled by setting the global argument `options(datatable.auto.index = FALSE)`.
 
-=====* Disabling auto indexing still allows to use indices created explicitly
-with `setindex` or `setindexv`. You can disable indices fully by setting global
-argument `options(datatable.use.index = FALSE)`.=====
+* Disabling auto indexing still allows to use indices created explicitly with `setindex` or `setindexv`. You can disable indices fully by setting global argument `options(datatable.use.index = FALSE)`.
 
 #
 
-In recent version we extended auto indexing to expressions involving more than
-one column (combined with `&` operator). In the future, we plan to extend binary
-search to work with more binary operators like `<`, `<=`, `>` and `>=`.
+In recent version we extended auto indexing to expressions involving more than one column (combined with `&` operator). In the future, we plan to extend binary search to work with more binary operators like `<`, `<=`, `>` and `>=`.
 
-We will discuss fast *subsets* using keys and secondary indices to *joins* in
-the next vignette, *"Joins and rolling joins"*.
+We will discuss fast *subsets* using keys and secondary indices to *joins* in the next vignette, *"Joins and rolling joins"*.
 
 ***
 
