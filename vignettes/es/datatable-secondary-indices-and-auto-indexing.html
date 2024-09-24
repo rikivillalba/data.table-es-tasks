@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Secondary indices and auto indexing</title>
+<title>Índices secundarios y auto indexación</title>
 <style type="text/css">
 /**
  * Prism.s theme ported from highlight.js's xcode style
@@ -140,7 +140,7 @@ section.footnotes::before {
 </head>
 <body>
 <div class="frontmatter">
-<div class="title"><h1>Secondary indices and auto indexing</h1></div>
+<div class="title"><h1>Índices secundarios y auto indexación</h1></div>
 <div class="author"><h2></h2></div>
 <div class="date"><h3>2024-09-23</h3></div>
 </div>
@@ -477,7 +477,7 @@ names(attributes(dt))
 ## run thefirst time
 (t1 &lt;- system.time(ans &lt;- dt[x == 989L]))
 #    user  system elapsed 
-#    0.50    0.06    0.60
+#    0.50    0.05    0.56
 head(ans)
 #        x         y
 #    &lt;int&gt;     &lt;num&gt;
@@ -500,14 +500,14 @@ indices(dt)
 <pre><code class="language-r">## successive subsets
 (t2 &lt;- system.time(dt[x == 989L]))
 #    user  system elapsed 
-#    0.08    0.00    0.02
+#    0.01    0.02    0.02
 system.time(dt[x %in% 1989:2012])
 #    user  system elapsed 
-#    0.00    0.02    0.03
+#    0.00    0.01    0.03
 </code></pre>
 <ul>
 <li>
-<p>La primera ejecución tardó 0.600 segundos, mientras que la segunda vez tardó 0.020 segundos.</p>
+<p>La primera ejecución tardó 0.560 segundos, mientras que la segunda vez tardó 0.020 segundos.</p>
 </li>
 <li>
 <p>La indexación automática se puede desactivar configurando la opción global <code>options(datatable.auto.index = FALSE)</code>.</p>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Frequently Asked Questions about data.table</title>
+<title>Preguntas frecuentes sobre data.table</title>
 <style type="text/css">
 /**
  * Prism.s theme ported from highlight.js's xcode style
@@ -149,7 +149,7 @@ section.footnotes::before {
 </head>
 <body>
 <div class="frontmatter">
-<div class="title"><h1>Frequently Asked Questions about data.table</h1></div>
+<div class="title"><h1>Preguntas frecuentes sobre data.table</h1></div>
 <div class="author"><h2></h2></div>
 <div class="date"><h3>2024-09-23</h3></div>
 </div>
@@ -568,7 +568,8 @@ cat(try(A[B], silent = TRUE))
 <li><code>DT[ , colA] == DF[ , &quot;colA&quot;]</code> (actualmente en data.table v1.9.8 pero está a punto de cambiar, consulte las notas de la versión)</li>
 <li><code>DT[ , list(colA)] == DF[ , &quot;colA&quot;, drop = FALSE]</code></li>
 <li><code>DT[NA]</code> devuelve 1 fila de <code>NA</code>, pero <code>DF[NA]</code> devuelve una copia completa de <code>DF</code> que contiene <code>NA</code> en todas partes. El símbolo <code>NA</code> es de tipo <code>lógico</code> en R y, por lo tanto, <code>[.data.frame</code> lo recicla. La intención del usuario probablemente era <code>DF[NA_integer_]</code>. <code>[.data.table</code> desvía a esta intención probable automáticamente, para mayor comodidad.</li>
-<li><code>DT[c(TRUE, NA, FALSE)]</code> trata a <code>NA</code> como <code>FALSE</code>, pero <code>DF[c(TRUE, NA, FALSE)]</code> devuelve===== <code>NA</code> filas para cada <code>NA</code> ===== - <code>DT[ColA == ColB]</code> es más simple que <code>DF[!is.na(ColA) &amp; !is.na(ColB) &amp; ColA == ColB, ]</code></li>
+<li><code>DT[c(TRUE, NA, FALSE)]</code> trata a <code>NA</code> como <code>FALSE</code>, pero <code>DF[c(TRUE, NA, FALSE)]</code> devuelve <code>NA</code> filas para cada <code>NA</code></li>
+<li><code>DT[ColA == ColB]</code> es más simple que <code>DF[!is.na(ColA) &amp; !is.na(ColB) &amp; ColA == ColB, ]</code></li>
 <li><code>data.frame(list(1:2, &quot;k&quot;, 1:4))</code> crea 3 columnas, data.table crea una columna <code>list</code>.</li>
 <li><code>check.names</code> es por defecto <code>TRUE</code> en <code>data.frame</code> pero <code>FALSE</code> en data.table, para mayor comodidad.</li>
 <li><code>data.table</code> siempre ha establecido <code>stringsAsFactors=FALSE</code> de forma predeterminada. En R 4.0.0 (abril de 2020), el valor predeterminado de <code>data.frame</code> se cambió de <code>TRUE</code> a <code>FALSE</code> y ya no hay ninguna diferencia en este sentido; Consulte <a href="https://developer.r-project.org/Blog/public/2020/02/16/stringsasfactors/">stringsAsFactors, Kurt Hornik, febrero de 2020</a>.</li>
@@ -775,11 +776,11 @@ class(7L)             # L makes it an integer
 DT[ , b := rnorm(5)]  # 'replace' integer column with a numeric column
 #        a          b
 #    &lt;int&gt;      &lt;num&gt;
-# 1:     1 -0.2181309
-# 2:     2 -0.9230903
-# 3:     3  0.5735340
-# 4:     4  0.6830394
-# 5:     5  0.9924424
+# 1:     1  0.5812133
+# 2:     2 -0.3440334
+# 3:     3  0.9218432
+# 4:     4  0.5840555
+# 5:     5  0.4567864
 </code></pre>
 <h2 id="lectura-de-data-table-desde-un-archivo-rds-o-rdata"><span class="section-number">5.3</span> Lectura de data.table desde un archivo RDS o RData</h2>
 <p><code>*.RDS</code> y <code>*.RData</code> son tipos de archivo que pueden almacenar objetos R en memoria en el disco de manera eficiente. Sin embargo, almacenar data.table en el archivo binario pierde su sobreasignación de columnas. Esto no es un gran problema: su data.table se copiará en la memoria en la siguiente operación <em>por referencia</em> y arrojará una advertencia. Por lo tanto, se recomienda llamar a <code>setalloccol()</code> en cada data.table cargado con llamadas <code>readRDS()</code> o <code>load()</code>.</p>

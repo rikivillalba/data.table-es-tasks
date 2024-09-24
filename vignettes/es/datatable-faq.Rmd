@@ -1,5 +1,5 @@
 ---
-title: "Frequently Asked Questions about data.table"
+title: "Preguntas frecuentes sobre data.table"
 date: "`r Sys.Date()`"
 output:
   markdown::html_format:
@@ -392,7 +392,8 @@ Una ventaja clave de los vectores de columna en R es que están _ordenados_, a d
  - `DT[ , colA] == DF[ , "colA"]` (actualmente en data.table v1.9.8 pero está a punto de cambiar, consulte las notas de la versión)
  - `DT[ , list(colA)] == DF[ , "colA", drop = FALSE]`
  - `DT[NA]` devuelve 1 fila de `NA`, pero `DF[NA]` devuelve una copia completa de `DF` que contiene `NA` en todas partes. El símbolo `NA` es de tipo `lógico` en R y, por lo tanto, `[.data.frame` lo recicla. La intención del usuario probablemente era `DF[NA_integer_]`. `[.data.table` desvía a esta intención probable automáticamente, para mayor comodidad.
- - `DT[c(TRUE, NA, FALSE)]` trata a `NA` como `FALSE`, pero `DF[c(TRUE, NA, FALSE)]` devuelve===== `NA` filas para cada `NA` ===== - `DT[ColA == ColB]` es más simple que `DF[!is.na(ColA) & !is.na(ColB) & ColA == ColB, ]`
+ - `DT[c(TRUE, NA, FALSE)]` trata a `NA` como `FALSE`, pero `DF[c(TRUE, NA, FALSE)]` devuelve `NA` filas para cada `NA`
+ - `DT[ColA == ColB]` es más simple que `DF[!is.na(ColA) & !is.na(ColB) & ColA == ColB, ]`
  - `data.frame(list(1:2, "k", 1:4))` crea 3 columnas, data.table crea una columna `list`.
  - `check.names` es por defecto `TRUE` en `data.frame` pero `FALSE` en data.table, para mayor comodidad.
  - `data.table` siempre ha establecido `stringsAsFactors=FALSE` de forma predeterminada. En R 4.0.0 (abril de 2020), el valor predeterminado de `data.frame` se cambió de `TRUE` a `FALSE` y ya no hay ninguna diferencia en este sentido; Consulte [stringsAsFactors, Kurt Hornik, febrero de 2020](https://developer.r-project.org/Blog/public/2020/02/16/stringsasfactors/).
