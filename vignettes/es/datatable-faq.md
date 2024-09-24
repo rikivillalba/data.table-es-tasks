@@ -769,11 +769,11 @@ class(7L)             # L makes it an integer
 DT[ , b := rnorm(5)]  # 'replace' integer column with a numeric column
 #        a          b
 #    <int>      <num>
-# 1:     1  0.3100603
-# 2:     2 -0.7662917
-# 3:     3  0.4455291
-# 4:     4 -0.5420664
-# 5:     5 -0.3921003
+# 1:     1 -0.2181309
+# 2:     2 -0.9230903
+# 3:     3  0.5735340
+# 4:     4  0.6830394
+# 5:     5  0.9924424
 ```
 
 ## Lectura de data.table desde un archivo RDS o RData

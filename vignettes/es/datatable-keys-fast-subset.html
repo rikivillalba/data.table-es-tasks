@@ -669,7 +669,7 @@ print(object.size(DT), units = &quot;Mb&quot;)
 t1 &lt;- system.time(ans1 &lt;- DT[x == &quot;g&quot; &amp; y == 877L])
 t1
 #    user  system elapsed 
-#    0.36    0.09    0.47
+#    0.36    0.09    0.45
 head(ans1)
 #         x     y        val
 #    &lt;char&gt; &lt;int&gt;      &lt;num&gt;
@@ -708,7 +708,7 @@ identical(ans1$val, ans2$val)
 # [1] TRUE
 </code></pre>
 <ul>
-<li>La mejora en velocidad es <strong>~470x</strong>!</li>
+<li>La mejora en velocidad es <strong>~450x</strong>!</li>
 </ul>
 <h3 id="b-por-qu-al-introducir-datos-en-una-data-table-se-obtienen-subconjuntos-incre-blemente-r-pidos">b) ¿Por qué al introducir datos en una <em>data.table</em> se obtienen subconjuntos increíblemente rápidos?</h3>
 <p>Para entender esto, veamos primero qué hace el <em>enfoque de escaneo de vector</em> (método 1).</p>

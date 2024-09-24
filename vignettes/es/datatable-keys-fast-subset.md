@@ -629,7 +629,7 @@ key(DT)
 t1 <- system.time(ans1 <- DT[x == "g" & y == 877L])
 t1
 #    user  system elapsed 
-#    0.36    0.09    0.47
+#    0.36    0.09    0.45
 head(ans1)
 #         x     y        val
 #    <char> <int>      <num>
@@ -672,7 +672,7 @@ identical(ans1$val, ans2$val)
 # [1] TRUE
 ```
 
-* La mejora en velocidad es **~470x**!
+* La mejora en velocidad es **~450x**!
 
 ### b) ¿Por qué al introducir datos en una *data.table* se obtienen subconjuntos increíblemente rápidos?
 

@@ -775,11 +775,11 @@ class(7L)             # L makes it an integer
 DT[ , b := rnorm(5)]  # 'replace' integer column with a numeric column
 #        a          b
 #    &lt;int&gt;      &lt;num&gt;
-# 1:     1  0.3100603
-# 2:     2 -0.7662917
-# 3:     3  0.4455291
-# 4:     4 -0.5420664
-# 5:     5 -0.3921003
+# 1:     1 -0.2181309
+# 2:     2 -0.9230903
+# 3:     3  0.5735340
+# 4:     4  0.6830394
+# 5:     5  0.9924424
 </code></pre>
 <h2 id="lectura-de-data-table-desde-un-archivo-rds-o-rdata"><span class="section-number">5.3</span> Lectura de data.table desde un archivo RDS o RData</h2>
 <p><code>*.RDS</code> y <code>*.RData</code> son tipos de archivo que pueden almacenar objetos R en memoria en el disco de manera eficiente. Sin embargo, almacenar data.table en el archivo binario pierde su sobreasignación de columnas. Esto no es un gran problema: su data.table se copiará en la memoria en la siguiente operación <em>por referencia</em> y arrojará una advertencia. Por lo tanto, se recomienda llamar a <code>setalloccol()</code> en cada data.table cargado con llamadas <code>readRDS()</code> o <code>load()</code>.</p>
