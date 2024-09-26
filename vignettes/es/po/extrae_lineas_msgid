@@ -1,0 +1,3 @@
+# Esto es bastante lento, porque llama a sh por cada mensaje
+find -name '*.po.txt' -delete
+find *.po -exec msgfilter --keep-header --no-wrap -i '{}' sh -c "echo \$MSGFILTER_MSGID >> '{}.txt'" ';' > /dev/null
