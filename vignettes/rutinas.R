@@ -26,31 +26,6 @@
 
 
 
-# hacks para que md2po funcione con rmd's
-# https://github.com/SciViews/rmdpo
-# (modificado para q funcione con translateToolkit 3.13)
-source("rmd2po.R")
-
-
-{
-  # entorno conda donde se instaló "translate toolkit"
-  # (esto funciona para mi caso en windows. Yo lo instalé en "main")
-  #TODO: usar el que corresponde. O Iniciar R desde un entorno donde 
-  # md2po esté idsponible.
-  
-  condaenv <- "main"
-  
-  tryCatch(
-    system2("md2po", "--version", stderr = TRUE),
-    error = \(e) {
-      message("cargar ruta de conda. env: \"", condaenv, "\"")
-      md2po_path <- file.path(
-        dirname(dirname(reticulate::conda_binary())), "envs", condaenv,"Scripts")
-      Sys.setenv(
-        PATH = paste(md2po_path, Sys.getenv("PATH"), sep = .Platform$path.sep))
-    }
-  )
-}
 
 # Función auxiliar para sustitución con regmatches<-
 regex_sub <- function(x, pattern, ...) {
@@ -94,10 +69,12 @@ regex_sub <- function(x, pattern, ...) {
     
     tryCatch(
       {
-        system2("msgfilter", c("--keep-header", "--no-wrap", 
-                         "-i", shQuote(f$po_files), "-o", shQuote(f$po_files), 
-                         "echo -n",  shQuote("")))
-
+        # Modificar el .PO para que las traducciones estén en 1 sola línea
+        # (compatible con windows mingw)
+        system2("sh", c("-c", shQuote(paste0(
+          "msgfilter", "--keep-header", "--no-wrap", 
+          "-i", shQuote(f$po_files), "-o", shQuote(f$po_files), "cat"))))
+        
         lines_po <- readLines(f$po_files)
         lines_txt <- readLines(f$po_txt_files)
         lines_txt <- gsub("(?<!\\\\)\"", "\\\\\"", lines_txt, perl = T)
@@ -122,6 +99,7 @@ regex_sub <- function(x, pattern, ...) {
 
 # Actualiza la metadata en PO (fecha de revisión, Last translator...)
 .actualizar_po_metadata <- function() {
+  last_translator <- list(name = "Ricardo Villalba", mail = "rikivillalba@gmail.com")
   pwd <- getwd()
   on.exit(setwd(pwd))
   setwd("es/po")
@@ -130,24 +108,26 @@ regex_sub <- function(x, pattern, ...) {
     lines <- readLines(i) |>
       regex_sub("\"Project-Id-Version: (.*)\\\\n\"", "0.0.1") |>
       regex_sub("\"PO-Revision-Date: (.*)\\\\n\"", format(Sys.time(), format = "%Y-%m-%d %H:%M%z")) |>
-      regex_sub("\"Last-Translator: (.*)\\\\n\"", "Ricardo Villalba <rikivillalba@gmail.com>") |>
+      regex_sub("\"Last-Translator: (.*)\\\\n\"", with(last_translator, sprintf("%s <%s>", name, mail))) |>
       regex_sub("\"Language-Team: (.*)\\\\n\"", "es")  |> 
       append("\"Language: es\\n\"", after = grep("\"Language-Team: (.*)\\\\n\"", lines))
     writeLines(lines, i)
   })
 }
 
+# Usa las rutinas de rmd2po para generar archivos ".po" y traducir las viñetas
 generar_po_desde_rmd_en_ingles <- function() {
-  rmd_files <- dir(".Rmd$")
+  rmd_files <- dir(,".Rmd$")
   for (f in rmd_files) {
-    rmd2po()
-    po2rmd(f, lang = "es")
+    rmd2po(f, lang = "es")
   }  
 }
 
 
 
 # Una vez traducidos los po, generar los rmd
+# po2rmd utiliza "po2md" (librerías escritas en python)
+# po2rmd hace algunas transformaciones sobre el .Rmd original para 
 convertir_po_a_rmd <- function() {
   rmd_files <- dir("es", ".Rmd$")
   for (f in rmd_files) {
@@ -213,6 +193,55 @@ traducir_titulos_rmd <- function() {
   })
 }
 
+extrae_texto_de_msgid <- function() {
+  message("Extraer msgid de archivos...")
+  for (i in dir("es/po", ".po$")) {
+    lines <- grep(readLines(file.path("es/po", i)), pattern = "^\\s*(\"|msg)", value= TRUE)
+    msgs <- grep("^\\s*msg", lines)
+    grps <- cut(seq_along(lines), c(msgs, Inf), labels = FALSE, right = FALSE)
+    text <- vapply(seq_along(msgs), "", FUN = function(j) paste0(gsub(
+      "\\s*(msg(id|id_plural|str)(\\[\\d*\\])?)?\\s*\"(([^\"]|\\\\.)*)\".*", 
+      "\\4", lines[grps == j]), collapse = ""))
+    writeLines(text[grep("^\\s*msgid", lines[msgs])], file.path("es/po", paste0(i, ".txt")))
+  }
+  message("Listo")
+}
+
+
+
+cargar_entorno_conda <- function(condaenv) {
+  # entorno conda donde se instaló "translate toolkit"
+  # (esto funciona para mi caso en windows. Yo lo instalé en "main")
+  #TODO: usar el que corresponde. O Iniciar R desde un entorno donde 
+  # md2po esté idsponible.
+  tryCatch(
+    system2("md2po", "--version", stderr = TRUE),
+    error = \(e) {
+      message("cargar ruta de conda. env: \"", condaenv, "\"")
+      md2po_path <- file.path(
+        dirname(dirname(reticulate::conda_binary())), "envs", condaenv,"Scripts")
+      Sys.setenv(
+        PATH = paste(md2po_path, Sys.getenv("PATH"), sep = .Platform$path.sep))
+    }
+  )
+}
+
 #para "normalizar" el archivo: 
 # find *.po -exec msgcat -o {} {} \\;"
+
+#==== Inicio ====
+
+# inicia en la carpeta "vignettes"
+setwd("~/R/translations/data.table/vignettes")
+
+# hacks para que md2po funcione con rmd's
+# https://github.com/SciViews/rmdpo
+# (modificado para q funcione con translateToolkit 3.13)
+
+cargar_entorno_conda(condaenv = "main")
+
+source("rmd2po.R")
+
+generar_po_desde_rmd_en_ingles()
+extrae_texto_de_msgid()
 

@@ -2,14 +2,15 @@
 # Ejecutar con: Rscript extrae_lineas_msgid.R
 files <- if (length(commandArgs(trailingOnly  = TRUE)) > 1) 
   commandArgs()[-1] else dir(,"[.]po$")
-message(sprintf("Extraer data de %d archivos...", length(files)))
+message(sprintf("Extraer msgid de %d archivos...", length(files)))
 for (i in files) {
-  lines <- readLines(i) |> grep(pattern = "^\\s*(\"|msg)", value= TRUE)
-  pos_msg <- grep("^\\s*msg", lines)
-  pos_msgid <- grep("^\\s*msgid", lines)
-  pos_msgid_end <- pos_msg[match(pos_msgid, pos_msg, length(lines)) + 1] - 1
-  sapply(seq_along(pos_msgid), function(i) paste0(collapse = "", sub(
-    "[^\"]*\"(.*)\"[^\"]*$", "\\1", lines[pos_msgid[i]:pos_msgid_end[i]]))) |>
-    writeLines(paste0(i,".txt"))
+  lines <- grep(readLines(i), pattern = "^\\s*(\"|msg)", value= TRUE)
+  msgs <- grep("^\\s*msg", lines)
+  grps <- cut(seq_along(lines), c(msgs, Inf), labels = FALSE, right = FALSE)
+  text <- vapply(seq_along(msgs), "", FUN = function(j) 
+    paste0(gsub(
+      "\\s*(msg(id|id_plural|str)(\\[\\d*\\])?)?\\s*\"(([^\"]|\\\\.)*)\".*", 
+      "\\4", lines[grps == j]), collapse = ""))
+  writeLines(text[grep("^\\s*msgid", lines[msgs])], paste0(i, ".txt"))
 }
 message("Listo")
