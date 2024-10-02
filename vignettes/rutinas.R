@@ -137,17 +137,15 @@ convertir_po_a_rmd <- function() {
 
 # generar las viñetas html
 generar_viñetas_html <- function() {
-  pwd <- getwd()
-  on.exit(setwd(pwd))
-  setwd("es")
-  rmd_files  <- dir(pattern=".Rmd$")
+  rmd_files  <- dir("es", pattern=".Rmd$")
   lapply(rmd_files, \(i) {
-    # Si no lo corrés en procesos independientes, hay un error CEDTA en data.table
-    # TODO: me propongo revisarlo
-    callr::r(\(f) knitr::knit2html(f), list(i))
+    # Corre en su propio subproceso.
+    # NOTA no pasar knitr directamente en lapply (porque topenv() es "base" 
+    # en lugar de .Globalenv y cedta() no lo detecta)
+    callr::r(\(f) knitr::knit2html(file.path("es", f)), list(i))
   })
   # borrar markdown generados
-  file.remove(dir(pattern = "[.]md$"))
+  file.remove(dir("es", pattern = "[.]md$"))
 }
 
 # Aquí: Script provisorio para traducir los títulos
